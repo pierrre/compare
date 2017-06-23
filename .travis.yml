@@ -1,0 +1,14 @@
+dist: trusty
+sudo: false
+
+language: go
+go:
+  - 1.8.3
+  - 1.9beta1
+  - tip
+
+install: go get -v -d -t ./...
+
+script:
+  - make test
+  - make lint
