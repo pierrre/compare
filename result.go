@@ -1,9 +1,8 @@
 package compare
 
 import (
-	"bytes"
 	"fmt"
-	"strconv"
+	"io"
 )
 
 // Result is a list of Difference.
@@ -20,24 +19,24 @@ func (r Result) Merge(rm Result) Result {
 	return append(r, rm...)
 }
 
-func (r Result) String() string {
-	switch len(r) {
-	case 0:
-		return "<none>"
-	case 1:
-		return r[0].String()
+// Format implements fmt.Formatter.
+//
+// See Difference.Format() for supported verb and flag.
+func (r Result) Format(s fmt.State, verb rune) {
+	if verb != 'v' {
+		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, r)
+		return
 	}
-	buf := bufPool.Get().(*bytes.Buffer)
-	buf.Reset()
+	if len(r) == 0 {
+		_, _ = io.WriteString(s, "<none>")
+		return
+	}
 	for i, d := range r {
 		if i > 0 {
-			buf.WriteString("\n")
+			_, _ = io.WriteString(s, "\n")
 		}
-		buf.WriteString(d.String())
+		d.Format(s, verb)
 	}
-	s := buf.String()
-	bufPool.Put(buf)
-	return s
 }
 
 // Difference represents a difference between 2 values.
@@ -47,16 +46,29 @@ type Difference struct {
 	V1, V2  interface{}
 }
 
-func (d Difference) String() string {
-	return fmt.Sprintf("%s: %s: v1=%v v2=%v", PathString(d.Path), d.Message, d.formatValue(d.V1), d.formatValue(d.V2))
+// Format implements fmt.Formatter.
+//
+// It only supports the 'v' verb.
+// By default, it show the path and message.
+// The '+' flag shows values V1 and V2.
+func (d Difference) Format(s fmt.State, verb rune) {
+	if verb != 'v' {
+		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, d)
+		return
+	}
+	_, _ = fmt.Fprintf(s, "%s: %s", PathString(d.Path), d.Message)
+	if s.Flag('+') {
+		_, _ = fmt.Fprintf(s, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
+	}
 }
 
-func (d Difference) formatValue(v interface{}) string {
-	switch v := v.(type) {
+func (d Difference) getValueFormat(v interface{}) string {
+	switch v.(type) {
 	case string:
-		return strconv.Quote(v)
+		return "%q"
+	default:
+		return "%v"
 	}
-	return fmt.Sprint(v)
 }
 
 const (

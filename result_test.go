@@ -1,61 +1,53 @@
 package compare
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
-func TestResult(t *testing.T) {
-	for _, tc := range []struct {
-		name     string
-		result   Result
-		expected string
-	}{
-		{
-			name:     "None",
-			expected: "<none>",
+func TestResultFormat(t *testing.T) {
+	r := Result{
+		Difference{
+			Message: "test1",
+			V1:      1,
+			V2:      2,
 		},
-		{
-			name: "1",
-			result: Result{
-				Difference{
-					Message: "test",
-					V1:      1,
-					V2:      2,
-				},
-			},
-			expected: ".: test: v1=1 v2=2",
+		Difference{
+			Message: "test2",
+			V1:      "a",
+			V2:      "b",
 		},
-		{
-			name: "2",
-			result: Result{
-				Difference{
-					Message: "test1",
-					V1:      1,
-					V2:      2,
-				},
-				Difference{
-					Message: "test2",
-					V1:      3,
-					V2:      4,
-				},
-			},
-			expected: ".: test1: v1=1 v2=2\n.: test2: v1=3 v2=4",
-		},
-		{
-			name: "String",
-			result: Result{
-				Difference{
-					Message: "test",
-					V1:      "a",
-					V2:      "b",
-				},
-			},
-			expected: ".: test: v1=\"a\" v2=\"b\"",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			s := tc.result.String()
-			if s != tc.expected {
-				t.Fatalf("unexpected result: got %q, want %q", s, tc.expected)
-			}
-		})
+	}
+	s := fmt.Sprintf("%+v", r)
+	expected := ".: test1\n\tv1=1\n\tv2=2\n.: test2\n\tv1=\"a\"\n\tv2=\"b\""
+	if s != expected {
+		t.Fatalf("unexpected result:\ngot:\n%s\nwant:\n%s", s, expected)
+	}
+}
+
+func TestResultFormatEmpty(t *testing.T) {
+	var r Result
+	s := fmt.Sprintf("%+v", r)
+	expected := "<none>"
+	if s != expected {
+		t.Fatalf("unexpected result:\ngot:\n%s\nwant:\n%s", s, expected)
+	}
+}
+
+func TestResultFormatUnsupportedVerb(t *testing.T) {
+	var r Result
+	s := fmt.Sprintf("%s", r)
+	expected := "%!s(compare.Result)"
+	if s != expected {
+		t.Fatalf("unexpected result:\ngot:\n%s\nwant:\n%s", s, expected)
+	}
+}
+
+func TestDifferenceFormatUnsupportedVerb(t *testing.T) {
+	var d Difference
+	s := fmt.Sprintf("%s", d)
+	expected := "%!s(compare.Difference)"
+	if s != expected {
+		t.Fatalf("unexpected result:\ngot:\n%s\nwant:\n%s", s, expected)
 	}
 }
