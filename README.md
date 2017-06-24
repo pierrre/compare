@@ -10,3 +10,6 @@ Comparison library for Golang.
 - Supports custom comparison functions:
 	- `.Equal()` / `.Eq()` / `.Cmp()` / ...
 	- Add you own functions !
+
+## Examples
+- [Compare](https://godoc.org/github.com/pierrre/compare#example-Compare)
