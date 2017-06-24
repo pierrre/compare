@@ -1,8 +1,8 @@
 package compare
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 )
 
 // Result is a list of Difference.
@@ -28,16 +28,21 @@ func (r Result) Format(s fmt.State, verb rune) {
 		return
 	}
 	if len(r) == 0 {
-		_, _ = io.WriteString(s, "<none>")
+		_, _ = s.Write(resultNoneBytes)
 		return
 	}
 	for i, d := range r {
 		if i > 0 {
-			_, _ = io.WriteString(s, "\n")
+			_, _ = s.Write(resultNewLineBytes)
 		}
 		d.Format(s, verb)
 	}
 }
+
+var (
+	resultNoneBytes    = []byte("<none>")
+	resultNewLineBytes = []byte("\n")
+)
 
 // Difference represents a difference between 2 values.
 type Difference struct {
@@ -52,14 +57,20 @@ type Difference struct {
 // By default, it show the path and message.
 // The '+' flag shows values V1 and V2.
 func (d Difference) Format(s fmt.State, verb rune) {
-	if verb != 'v' {
-		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, d)
-		return
+	// We use a buffer in order to reduce memory allocation.
+	// fmt.State (and its real type) doesn't (yet?) implement WriteString().
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	if verb == 'v' {
+		_, _ = buf.WriteString(PathString(d.Path) + ": " + d.Message)
+		if s.Flag('+') {
+			_, _ = fmt.Fprintf(buf, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
+		}
+	} else {
+		_, _ = fmt.Fprintf(buf, "%%!%c(%T)", verb, d)
 	}
-	_, _ = fmt.Fprintf(s, "%s: %s", PathString(d.Path), d.Message)
-	if s.Flag('+') {
-		_, _ = fmt.Fprintf(s, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
-	}
+	_, _ = buf.WriteTo(s)
+	bufPool.Put(buf)
 }
 
 func (d Difference) getValueFormat(v interface{}) string {
