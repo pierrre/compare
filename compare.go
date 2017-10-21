@@ -57,6 +57,7 @@ func compareType(v1, v2 reflect.Value) (Result, bool) {
 	}}, true
 }
 
+// nolint: gocyclo
 func compareKind(v1, v2 reflect.Value) Result {
 	switch v1.Kind() {
 	case reflect.Bool:
