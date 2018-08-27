@@ -32,7 +32,7 @@ func BenchmarkResultFormat(b *testing.B) {
 	buf := new(bytes.Buffer)
 	for i := 0; i < b.N; i++ {
 		buf.Reset()
-		fmt.Fprintf(buf, "%+v", it)
+		_, _ = fmt.Fprintf(buf, "%+v", it)
 	}
 }
 
