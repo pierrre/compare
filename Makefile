@@ -8,7 +8,7 @@ test:
 lint: \
 	golangci-lint
 
-GOLANGCI_LINT_VERSION=v1.16.0
+GOLANGCI_LINT_VERSION=v1.17.0
 GOLANGCI_LINT_DIR=$(shell go env GOPATH)/pkg/golangci-lint/$(GOLANGCI_LINT_VERSION)
 $(GOLANGCI_LINT_DIR):
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOLANGCI_LINT_DIR) $(GOLANGCI_LINT_VERSION)
