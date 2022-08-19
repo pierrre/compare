@@ -4,7 +4,7 @@ package compare
 import (
 	"bytes"
 	"fmt"
-	"reflect"
+	"reflect" //nolint:depguard // Used for value inspection.
 )
 
 // Compare compares 2 values.
@@ -57,7 +57,7 @@ func compareType(v1, v2 reflect.Value) (Result, bool) {
 	}}, true
 }
 
-// nolint: gocyclo
+//nolint:gocyclo // Large switch/case is OK.
 func compareKind(v1, v2 reflect.Value) Result {
 	switch v1.Kind() {
 	case reflect.Bool:
@@ -78,8 +78,8 @@ func compareKind(v1, v2 reflect.Value) Result {
 		return compareSlice(v1, v2)
 	case reflect.Interface:
 		return compareInterface(v1, v2)
-	case reflect.Ptr:
-		return comparePtr(v1, v2)
+	case reflect.Pointer:
+		return comparePointer(v1, v2)
 	case reflect.Struct:
 		return compareStruct(v1, v2)
 	case reflect.Map:
@@ -90,6 +90,8 @@ func compareKind(v1, v2 reflect.Value) Result {
 		return compareChan(v1, v2)
 	case reflect.Func:
 		return compareFunc(v1, v2)
+	case reflect.Invalid:
+		return nil
 	}
 	return nil
 }
@@ -222,7 +224,7 @@ func compareInterface(v1, v2 reflect.Value) Result {
 	return compare(v1.Elem(), v2.Elem())
 }
 
-func comparePtr(v1, v2 reflect.Value) Result {
+func comparePointer(v1, v2 reflect.Value) Result {
 	if v1.Pointer() == v2.Pointer() {
 		return nil
 	}
@@ -265,7 +267,7 @@ func compareMap(v1, v2 reflect.Value) Result {
 	return r
 }
 
-func compareMapKey(v1, v2 reflect.Value, k reflect.Value) Result {
+func compareMapKey(v1, v2, k reflect.Value) Result {
 	v1 = v1.MapIndex(k)
 	v2 = v2.MapIndex(k)
 	vl1 := v1.IsValid()

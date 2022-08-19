@@ -1,7 +1,6 @@
 package compare
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -53,7 +52,7 @@ func TestPathString(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var s string
 			if tc.path != nil {
-				s = tc.path.(fmt.Stringer).String()
+				s = tc.path.String()
 			} else {
 				s = PathString(tc.path)
 			}

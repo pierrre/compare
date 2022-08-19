@@ -2,7 +2,7 @@ package compare
 
 import (
 	"fmt"
-	"reflect"
+	"reflect" //nolint:depguard // Used for value inspection.
 )
 
 // Func represents a comparison function.
@@ -67,9 +67,8 @@ func compareMethodEqualName(v1, v2 reflect.Value, name string) (Result, bool) {
 	t := m.Type()
 	if t.NumIn() != 1 || t.In(0) != v2.Type() || t.NumOut() != 1 || t.Out(0) != reflect.TypeOf(true) {
 		return nil, false
-
 	}
-	if m.Call([]reflect.Value{v2})[0].Interface().(bool) {
+	if m.Call([]reflect.Value{v2})[0].Interface().(bool) { //nolint:forcetypeassert // The type of the returned value is already checked above.
 		return nil, true
 	}
 	return Result{Difference{
@@ -88,7 +87,7 @@ func compareMethodCmp(v1, v2 reflect.Value) (Result, bool) {
 	if t.NumIn() != 1 || t.In(0) != v2.Type() || t.NumOut() != 1 || t.Out(0) != reflect.TypeOf(int(1)) {
 		return nil, false
 	}
-	c := m.Call([]reflect.Value{v2})[0].Interface().(int)
+	c := m.Call([]reflect.Value{v2})[0].Interface().(int) //nolint:forcetypeassert // The type of the returned value is already checked above.
 	if c == 0 {
 		return nil, true
 	}
@@ -105,7 +104,7 @@ func compareValue(v1, v2 reflect.Value) (Result, bool) {
 	if v1.Type() != typeReflectValue {
 		return nil, false
 	}
-	v1 = v1.Interface().(reflect.Value)
-	v2 = v2.Interface().(reflect.Value)
+	v1 = v1.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
+	v2 = v2.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
 	return compare(v1, v2), true
 }

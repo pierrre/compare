@@ -1,6 +1,8 @@
 package compare
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func ExampleCompare() {
 	type T struct {

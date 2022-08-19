@@ -3,7 +3,7 @@ package compare
 import (
 	"bytes"
 	"fmt"
-	"reflect"
+	"reflect" //nolint:depguard // Used for value inspection.
 	"sort"
 	"sync"
 )
@@ -31,7 +31,7 @@ func sortValues(s []reflect.Value, t reflect.Type) {
 }
 
 func newSortLess(s []reflect.Value, t reflect.Type) func(i, j int) bool {
-	switch t.Kind() {
+	switch t.Kind() { //nolint:exhaustive // We have a default case.
 	case reflect.Bool:
 		return newSortLessBool(s)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -99,6 +99,7 @@ func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
 	}
 }
 
+// TODO use go-libs ?
 var bufPool = sync.Pool{
 	New: func() interface{} {
 		return new(bytes.Buffer)

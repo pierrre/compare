@@ -5,10 +5,10 @@ import (
 	"image"
 	"math/big"
 	"net"
-	"reflect"
+	"reflect" //nolint:depguard // Used for value inspection.
 	"testing"
 	"time"
-	"unsafe"
+	"unsafe" //nolint:depguard // Used for unsafe.Pointer comparison.
 )
 
 var compareTestCases = []struct {
@@ -298,7 +298,7 @@ var compareTestCases = []struct {
 		},
 	},
 	{
-		name: "PtrEqual",
+		name: "PointerEqual",
 		v1: func() *int {
 			i := 1
 			return &i
@@ -309,12 +309,12 @@ var compareTestCases = []struct {
 		}(),
 	},
 	{
-		name: "PtrEqualPointer",
+		name: "PointerEqualPointer",
 		v1:   &testInt,
 		v2:   &testInt,
 	},
 	{
-		name: "PtrNotEqual",
+		name: "PointerNotEqual",
 		v1: func() *int {
 			i := 1
 			return &i
@@ -479,18 +479,18 @@ var compareTestCases = []struct {
 	},
 	{
 		name: "UnsafePointerEqual",
-		v1:   unsafe.Pointer(&testInt),
-		v2:   unsafe.Pointer(&testInt),
+		v1:   unsafe.Pointer(&testInt), //nolint:gosec // Ignore for testing.
+		v2:   unsafe.Pointer(&testInt), //nolint:gosec // Ignore for testing.
 	},
 	{
 		name: "UnsafePointerNotEqual",
-		v1:   unsafe.Pointer(&testInt),
-		v2:   unsafe.Pointer(&testSlice),
+		v1:   unsafe.Pointer(&testInt),   //nolint:gosec // Ignore for testing.
+		v2:   unsafe.Pointer(&testSlice), //nolint:gosec // Ignore for testing.
 		expected: Result{
 			Difference{
 				Message: msgUnsafePointerNotEqual,
-				V1:      uintptr(unsafe.Pointer(&testInt)),
-				V2:      uintptr(unsafe.Pointer(&testSlice)),
+				V1:      uintptr(unsafe.Pointer(&testInt)),   //nolint:gosec // Ignore for testing.
+				V2:      uintptr(unsafe.Pointer(&testSlice)), //nolint:gosec // Ignore for testing.
 			},
 		},
 	},

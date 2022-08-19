@@ -2,11 +2,13 @@ package compare
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 )
 
 // Path represents a field path.
 type Path interface {
+	fmt.Stringer
 	PathString() string
 	PathNext() Path
 }
@@ -16,7 +18,7 @@ func PathString(p Path) string {
 	if p == nil {
 		return "."
 	}
-	buf := bufPool.Get().(*bytes.Buffer)
+	buf := bufPool.Get().(*bytes.Buffer) //nolint:forcetypeassert // This pool only contains bytes.Buffer.
 	buf.Reset()
 	for p != nil {
 		_, _ = buf.WriteString(p.PathString())
@@ -33,12 +35,12 @@ type StructPath struct {
 	Next  Path
 }
 
-// PathString implements PathItem
+// PathString implements Path.
 func (p StructPath) PathString() string {
 	return "." + p.Field
 }
 
-// PathNext implements PathItem
+// PathNext implements Path.
 func (p StructPath) PathNext() Path {
 	return p.Next
 }
@@ -53,12 +55,12 @@ type MapPath struct {
 	Next Path
 }
 
-// PathString implements PathItem
+// PathString implements Path.
 func (p MapPath) PathString() string {
 	return "[" + p.Key + "]"
 }
 
-// PathNext implements PathItem
+// PathNext implements Path.
 func (p MapPath) PathNext() Path {
 	return p.Next
 }
@@ -73,12 +75,12 @@ type IndexedPath struct {
 	Next  Path
 }
 
-// PathString implements PathItem
+// PathString implements Path.
 func (p IndexedPath) PathString() string {
 	return "[" + strconv.Itoa(p.Index) + "]"
 }
 
-// PathNext implements PathItem
+// PathNext implements Path.
 func (p IndexedPath) PathNext() Path {
 	return p.Next
 }

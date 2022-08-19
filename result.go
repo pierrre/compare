@@ -59,7 +59,8 @@ type Difference struct {
 func (d Difference) Format(s fmt.State, verb rune) {
 	// We use a buffer in order to reduce memory allocation.
 	// fmt.State (and its real type) doesn't (yet?) implement WriteString().
-	buf := bufPool.Get().(*bytes.Buffer)
+	// TODO remove ?
+	buf := bufPool.Get().(*bytes.Buffer) //nolint:forcetypeassert // This pool only contains bytes.Buffer.
 	buf.Reset()
 	if verb == 'v' {
 		_, _ = buf.WriteString(PathString(d.Path) + ": " + d.Message)
