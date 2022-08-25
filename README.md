@@ -1,15 +1,17 @@
 # Compare
+
 Comparison library for Golang.
 
-[![GoDoc](https://godoc.org/github.com/pierrre/compare?status.svg)](https://godoc.org/github.com/pierrre/compare)
-[![Build Status](https://travis-ci.org/pierrre/compare.svg?branch=master)](https://travis-ci.org/pierrre/compare)
+[![Go Reference](https://pkg.go.dev/badge/github.com/pierrre/compare.svg)](https://pkg.go.dev/github.com/pierrre/compare)
 
 ## Features
+
 - Similar to `reflect.DeepEqual()`
 - Returns a detailed diff result
 - Supports custom comparison functions:
-	- `.Equal()` / `.Eq()` / `.Cmp()` / ...
-	- Add you own functions !
+  - `.Equal()` / `.Eq()` / `.Cmp()` / ...
+  - Add you own functions !
 
-## Examples
-- [Compare](https://godoc.org/github.com/pierrre/compare#example-Compare)
+## Usage
+
+- [Compare](https://pkg.go.dev/github.com/pierrre/compare#example-Compare)
