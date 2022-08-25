@@ -95,7 +95,7 @@ func newSortLessString(s []reflect.Value) func(i, j int) bool {
 
 func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
 	return func(i, j int) bool {
-		return fmt.Sprint(s[i]) < fmt.Sprint(s[j])
+		return fmt.Sprint(s[i]) < fmt.Sprint(s[j]) //nolint:gocritic // False positive.
 	}
 }
 

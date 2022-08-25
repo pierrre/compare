@@ -275,7 +275,7 @@ func compareMapKey(v1, v2, k reflect.Value) Result {
 	if !vl1 || !vl2 {
 		return Result{Difference{
 			Path: MapPath{
-				Key: fmt.Sprint(k),
+				Key: fmt.Sprint(k), //nolint:gocritic // False positive.
 			},
 			Message: msgMapKeyNotDefined,
 			V1:      vl1,
@@ -286,7 +286,7 @@ func compareMapKey(v1, v2, k reflect.Value) Result {
 	if len(r) == 0 {
 		return nil
 	}
-	ks := fmt.Sprint(k)
+	ks := fmt.Sprint(k) //nolint:gocritic // False positive.
 	for i, d := range r {
 		d.Path = MapPath{
 			Key:  ks,
