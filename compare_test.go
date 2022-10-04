@@ -13,8 +13,8 @@ import (
 
 var compareTestCases = []struct {
 	name     string
-	v1       interface{}
-	v2       interface{}
+	v1       any
+	v2       any
 	expected Result
 }{
 	{
@@ -276,18 +276,18 @@ var compareTestCases = []struct {
 	},
 	{
 		name: "InterfaceEqual",
-		v1:   [1]interface{}{1},
-		v2:   [1]interface{}{1},
+		v1:   [1]any{1},
+		v2:   [1]any{1},
 	},
 	{
 		name: "InterfaceEqualNil",
-		v1:   [1]interface{}{nil},
-		v2:   [1]interface{}{nil},
+		v1:   [1]any{nil},
+		v2:   [1]any{nil},
 	},
 	{
 		name: "InterfaceNotEqualOnlyOneIsNil",
-		v1:   [1]interface{}{1},
-		v2:   [1]interface{}{nil},
+		v1:   [1]any{1},
+		v2:   [1]any{nil},
 		expected: Result{
 			Difference{
 				Path:    IndexedPath{Index: 0},

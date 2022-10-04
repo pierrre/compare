@@ -48,7 +48,7 @@ var (
 type Difference struct {
 	Path    Path
 	Message string
-	V1, V2  interface{}
+	V1, V2  any
 }
 
 // Format implements fmt.Formatter.
@@ -74,7 +74,7 @@ func (d Difference) Format(s fmt.State, verb rune) {
 	bufPool.Put(buf)
 }
 
-func (d Difference) getValueFormat(v interface{}) string {
+func (d Difference) getValueFormat(v any) string {
 	switch v.(type) {
 	case string:
 		return "%q"

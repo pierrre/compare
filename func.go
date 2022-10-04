@@ -6,7 +6,7 @@ import (
 )
 
 // Func represents a comparison function.
-// It is guaranteed that both values: are valid, of the same type, and can be converted to interface{}.
+// It is guaranteed that both values: are valid, of the same type, and can be converted to any.
 // If the returned value "stop" is true, the comparison will stop.
 type Func func(v1, v2 reflect.Value) (r Result, stop bool)
 

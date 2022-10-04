@@ -101,7 +101,7 @@ func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
 
 // TODO use go-libs ?
 var bufPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return new(bytes.Buffer)
 	},
 }

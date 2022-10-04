@@ -8,7 +8,7 @@ import (
 )
 
 // Compare compares 2 values.
-func Compare(v1, v2 interface{}) Result {
+func Compare(v1, v2 any) Result {
 	return compare(
 		reflect.ValueOf(v1),
 		reflect.ValueOf(v2),

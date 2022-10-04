@@ -8,13 +8,13 @@ func ExampleCompare() {
 	type T struct {
 		String string
 		Int    int
-		Map    map[string]interface{}
+		Map    map[string]any
 		Slice  []int
 	}
 	v1 := T{
 		String: "aaa",
 		Int:    1,
-		Map: map[string]interface{}{
+		Map: map[string]any{
 			"a": "a",
 			"b": "b",
 			"c": "c",
@@ -24,7 +24,7 @@ func ExampleCompare() {
 	v2 := T{
 		String: "bbb",
 		Int:    2,
-		Map: map[string]interface{}{
+		Map: map[string]any{
 			"a": "z",
 			"b": 5,
 			"d": "c",

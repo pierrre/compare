@@ -28,7 +28,7 @@ func TestResultFormat(t *testing.T) {
 }
 
 func BenchmarkResultFormat(b *testing.B) {
-	var it interface{} = testResult
+	var it any = testResult
 	buf := new(bytes.Buffer)
 	for i := 0; i < b.N; i++ {
 		buf.Reset()
