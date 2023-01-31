@@ -31,9 +31,9 @@ func compareFuncs(v1, v2 reflect.Value) (Result, bool) {
 }
 
 func init() {
+	RegisterFunc(compareValue)
 	RegisterFunc(compareMethodEqual)
 	RegisterFunc(compareMethodCmp)
-	RegisterFunc(compareValue)
 }
 
 var methodEqualNames []string
