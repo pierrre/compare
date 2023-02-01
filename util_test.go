@@ -4,6 +4,8 @@ import (
 	"net"
 	"reflect" //nolint:depguard // Used for value inspection.
 	"testing"
+
+	"github.com/pierrre/assert"
 )
 
 var sortValuesTestCases = []struct {
@@ -106,10 +108,7 @@ func TestSortValues(t *testing.T) {
 	for _, tc := range sortValuesTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 			sortValues(tc.values, tc.typ)
-			diff := Compare(tc.values, tc.expected)
-			if len(diff) != 0 {
-				t.Fatalf("unexpected result:\n%v", diff)
-			}
+			assert.DeepEqual(t, tc.values, tc.expected)
 		})
 	}
 }

@@ -2,6 +2,8 @@ package compare
 
 import (
 	"testing"
+
+	"github.com/pierrre/assert"
 )
 
 func TestPathString(t *testing.T) {
@@ -56,9 +58,7 @@ func TestPathString(t *testing.T) {
 			} else {
 				s = PathString(tc.path)
 			}
-			if s != tc.expected {
-				t.Fatalf("unexpected result: got %q, want %q", s, tc.expected)
-			}
+			assert.Equal(t, s, tc.expected)
 		})
 	}
 }

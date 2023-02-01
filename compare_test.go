@@ -9,7 +9,25 @@ import (
 	"testing"
 	"time"
 	"unsafe" //nolint:depguard // Used for unsafe.Pointer comparison.
+
+	"github.com/pierrre/assert"
+	"github.com/pierrre/assert/ext/davecghspew"
+	"github.com/pierrre/assert/ext/pierrreerrors"
 )
+
+func init() {
+	// Prevent import cycle.
+	assert.DeepEqualer = func(v1, v2 any) (diff string, equal bool) {
+		res := Compare(v1, v2)
+		if len(res) == 0 {
+			return "", true
+		}
+		diff = fmt.Sprint(res)
+		return diff, false
+	}
+	davecghspew.ConfigureDefault()
+	pierrreerrors.Configure()
+}
 
 var compareTestCases = []struct {
 	name     string
@@ -713,10 +731,7 @@ func TestCompare(t *testing.T) {
 	for _, tc := range compareTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := Compare(tc.v1, tc.v2)
-			diff := Compare(r, tc.expected)
-			if len(diff) != 0 {
-				t.Fatalf("unexpected result:\ngot:\n%v\nwant:\n%v\ndiff:\n%v", r, tc.expected, diff)
-			}
+			assert.DeepEqual(t, r, tc.expected)
 		})
 	}
 }
