@@ -1,6 +1,6 @@
 module github.com/pierrre/compare
 
-go 1.19
+go 1.20
 
 require github.com/pierrre/assert v0.0.8
 
