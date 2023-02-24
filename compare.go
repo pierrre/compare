@@ -4,7 +4,7 @@ package compare
 import (
 	"bytes"
 	"fmt"
-	"reflect" //nolint:depguard // Used for value inspection.
+	"reflect"
 )
 
 // Compare compares 2 values.

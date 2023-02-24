@@ -3,7 +3,7 @@ package compare
 import (
 	"bytes"
 	"fmt"
-	"reflect" //nolint:depguard // Used for value inspection.
+	"reflect"
 	"sort"
 	"sync"
 )

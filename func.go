@@ -2,7 +2,7 @@ package compare
 
 import (
 	"fmt"
-	"reflect" //nolint:depguard // Used for value inspection.
+	"reflect"
 )
 
 // Func represents a comparison function.

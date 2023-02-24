@@ -2,7 +2,7 @@ package compare
 
 import (
 	"net"
-	"reflect" //nolint:depguard // Used for value inspection.
+	"reflect"
 	"testing"
 
 	"github.com/pierrre/assert"

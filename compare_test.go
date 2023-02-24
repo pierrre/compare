@@ -5,7 +5,7 @@ import (
 	"image"
 	"math/big"
 	"net"
-	"reflect" //nolint:depguard // Used for value inspection.
+	"reflect"
 	"testing"
 	"time"
 	"unsafe" //nolint:depguard // Used for unsafe.Pointer comparison.
