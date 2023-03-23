@@ -1,7 +1,6 @@
 package compare
 
 import (
-	"bytes"
 	"fmt"
 )
 
@@ -60,8 +59,7 @@ func (d Difference) Format(s fmt.State, verb rune) {
 	// We use a buffer in order to reduce memory allocation.
 	// fmt.State (and its real type) doesn't (yet?) implement WriteString().
 	// TODO remove ?
-	buf := bufPool.Get().(*bytes.Buffer) //nolint:forcetypeassert // This pool only contains bytes.Buffer.
-	buf.Reset()
+	buf := bufPool.Get()
 	if verb == 'v' {
 		_, _ = buf.WriteString(PathString(d.Path) + ": " + d.Message)
 		if s.Flag('+') {

@@ -1,7 +1,6 @@
 package compare
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 )
@@ -18,8 +17,7 @@ func PathString(p Path) string {
 	if p == nil {
 		return "."
 	}
-	buf := bufPool.Get().(*bytes.Buffer) //nolint:forcetypeassert // This pool only contains bytes.Buffer.
-	buf.Reset()
+	buf := bufPool.Get()
 	for p != nil {
 		_, _ = buf.WriteString(p.PathString())
 		p = p.PathNext()

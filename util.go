@@ -1,11 +1,11 @@
 package compare
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
 	"sort"
-	"sync"
+
+	"github.com/pierrre/go-libs/bufpool"
 )
 
 func getMapsKeys(v1, v2 reflect.Value) []reflect.Value {
@@ -99,9 +99,4 @@ func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
 	}
 }
 
-// TODO use go-libs ?
-var bufPool = sync.Pool{
-	New: func() any {
-		return new(bytes.Buffer)
-	},
-}
+var bufPool = bufpool.Pool{}
