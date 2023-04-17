@@ -9,6 +9,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/pierrre/errors v0.3.4 // indirect
+	github.com/pierrre/errors v0.3.6 // indirect
 	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7 // indirect
 )
