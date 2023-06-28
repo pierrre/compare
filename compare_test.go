@@ -11,8 +11,8 @@ import (
 	"unsafe" //nolint:depguard // Used for unsafe.Pointer comparison.
 
 	"github.com/pierrre/assert"
-	"github.com/pierrre/assert/ext/davecghspew"
 	"github.com/pierrre/assert/ext/pierrreerrors"
+	"github.com/pierrre/assert/ext/pierrrepretty"
 )
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 		diff = fmt.Sprint(res)
 		return diff, false
 	}
-	davecghspew.ConfigureDefault()
+	pierrrepretty.ConfigureDefault()
 	pierrreerrors.Configure()
 }
 
