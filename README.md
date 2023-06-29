@@ -1,6 +1,6 @@
 # Compare
 
-Comparison library for Golang.
+Go compare library.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/pierrre/compare.svg)](https://pkg.go.dev/github.com/pierrre/compare)
 
