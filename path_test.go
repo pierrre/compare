@@ -18,46 +18,49 @@ func TestPathString(t *testing.T) {
 		},
 		{
 			name: "Struct",
-			path: StructPath{
-				Field: "test",
+			path: Path{
+				StructPathElem{
+					Field: "test",
+				},
 			},
 			expected: ".test",
 		},
 		{
 			name: "Map",
-			path: MapPath{
-				Key: "test",
+			path: Path{
+				MapPathElem{
+					Key: "test",
+				},
 			},
 			expected: "[test]",
 		},
 		{
 			name: "Indexed",
-			path: IndexedPath{
-				Index: 1,
+			path: Path{
+				IndexedPathElem{
+					Index: 1,
+				},
 			},
 			expected: "[1]",
 		},
 		{
 			name: "All",
-			path: StructPath{
-				Field: "test",
-				Next: MapPath{
+			path: Path{
+				IndexedPathElem{
+					Index: 1,
+				},
+				MapPathElem{
 					Key: "test",
-					Next: IndexedPath{
-						Index: 1,
-					},
+				},
+				StructPathElem{
+					Field: "test",
 				},
 			},
 			expected: ".test[test][1]",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			var s string
-			if tc.path != nil {
-				s = tc.path.String()
-			} else {
-				s = PathString(tc.path)
-			}
+			s := tc.path.String()
 			assert.Equal(t, s, tc.expected)
 		})
 	}

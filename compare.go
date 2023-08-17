@@ -196,10 +196,9 @@ func compareArrayIndex(v1, v2 reflect.Value, i int) Result {
 		return nil
 	}
 	for j, d := range r {
-		d.Path = IndexedPath{
+		d.Path = append(d.Path, IndexedPathElem{
 			Index: i,
-			Next:  d.Path,
-		}
+		})
 		r[j] = d
 	}
 	return r
@@ -247,10 +246,9 @@ func compareStructField(v1, v2 reflect.Value, i int) Result {
 	}
 	f := v1.Type().Field(i).Name
 	for j, d := range r {
-		d.Path = StructPath{
+		d.Path = append(d.Path, StructPathElem{
 			Field: f,
-			Next:  d.Path,
-		}
+		})
 		r[j] = d
 	}
 	return r
@@ -274,9 +272,9 @@ func compareMapKey(v1, v2, k reflect.Value) Result {
 	vl2 := v2.IsValid()
 	if !vl1 || !vl2 {
 		return Result{Difference{
-			Path: MapPath{
+			Path: Path{MapPathElem{
 				Key: fmt.Sprint(k),
-			},
+			}},
 			Message: msgMapKeyNotDefined,
 			V1:      vl1,
 			V2:      vl2,
@@ -288,10 +286,9 @@ func compareMapKey(v1, v2, k reflect.Value) Result {
 	}
 	ks := fmt.Sprint(k)
 	for i, d := range r {
-		d.Path = MapPath{
-			Key:  ks,
-			Next: d.Path,
-		}
+		d.Path = append(d.Path, MapPathElem{
+			Key: ks,
+		})
 		r[i] = d
 	}
 	return r

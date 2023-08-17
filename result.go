@@ -61,7 +61,7 @@ func (d Difference) Format(s fmt.State, verb rune) {
 	// TODO remove ?
 	buf := bufPool.Get()
 	if verb == 'v' {
-		_, _ = buf.WriteString(PathString(d.Path) + ": " + d.Message)
+		_, _ = buf.WriteString(d.Path.String() + ": " + d.Message)
 		if s.Flag('+') {
 			_, _ = fmt.Fprintf(buf, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
 		}
