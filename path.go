@@ -1,88 +1,66 @@
 package compare
 
 import (
-	"fmt"
 	"strconv"
+	"strings"
 )
 
-// Path represents a field path.
-type Path interface {
-	fmt.Stringer
-	PathString() string
-	PathNext() Path
-}
+// Path represents a field path, which is a list of PathElem.
+//
+// Elements are stored in reverse order, the first element is the deepest.
+// It helps to prepend elements to the path efficiently.
+type Path []PathElem
 
-// PathString returns the string value for a Path.
-func PathString(p Path) string {
-	if p == nil {
+// String returns the string value for a Path.
+func (p Path) String() string {
+	if len(p) == 0 {
 		return "."
 	}
-	buf := bufPool.Get()
-	for p != nil {
-		_, _ = buf.WriteString(p.PathString())
-		p = p.PathNext()
+	ss := make([]string, len(p))
+	for i, e := range p {
+		ss[len(ss)-i-1] = e.String()
 	}
-	s := buf.String()
-	bufPool.Put(buf)
-	return s
+	return strings.Join(ss, "")
 }
 
-// StructPath is a Path for a struct field.
-type StructPath struct {
+// PathElem is a single element in a Path.
+type PathElem interface {
+	String() string
+	pathElem()
+}
+
+// StructPathElem is a PathElem for a struct field.
+type StructPathElem struct {
 	Field string
-	Next  Path
 }
 
-// PathString implements Path.
-func (p StructPath) PathString() string {
-	return "." + p.Field
+// String returns the string representation.
+func (e StructPathElem) String() string {
+	return "." + e.Field
 }
 
-// PathNext implements Path.
-func (p StructPath) PathNext() Path {
-	return p.Next
+func (e StructPathElem) pathElem() {}
+
+// MapPathElem is a PathElem for a map key.
+type MapPathElem struct {
+	Key string
 }
 
-func (p StructPath) String() string {
-	return PathString(p)
+// String returns the string representation.
+func (e MapPathElem) String() string {
+	return "[" + e.Key + "]"
 }
 
-// MapPath is a Path for a map key.
-type MapPath struct {
-	Key  string
-	Next Path
-}
+func (e MapPathElem) pathElem() {}
 
-// PathString implements Path.
-func (p MapPath) PathString() string {
-	return "[" + p.Key + "]"
-}
-
-// PathNext implements Path.
-func (p MapPath) PathNext() Path {
-	return p.Next
-}
-
-func (p MapPath) String() string {
-	return PathString(p)
-}
-
-// IndexedPath is a Path for a slice/array index.
-type IndexedPath struct {
+// IndexedPathElem is a PathElem for a slice/array index.
+type IndexedPathElem struct {
 	Index int
-	Next  Path
 }
 
-// PathString implements Path.
-func (p IndexedPath) PathString() string {
-	return "[" + strconv.Itoa(p.Index) + "]"
+// String returns the string representation.
+func (e IndexedPathElem) String() string {
+	return "[" + strconv.Itoa(e.Index) + "]"
 }
 
-// PathNext implements Path.
-func (p IndexedPath) PathNext() Path {
-	return p.Next
-}
-
-func (p IndexedPath) String() string {
-	return PathString(p)
-}
+func (e IndexedPathElem) pathElem() {}

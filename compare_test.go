@@ -22,7 +22,7 @@ func init() {
 		if len(res) == 0 {
 			return "", true
 		}
-		diff = fmt.Sprint(res)
+		diff = fmt.Sprintf("%+v", res)
 		return diff, false
 	}
 	pierrrepretty.ConfigureDefault()
@@ -177,7 +177,11 @@ var compareTestCases = []struct {
 		v2:   [3]int{1, 0, 3},
 		expected: Result{
 			Difference{
-				Path:    IndexedPath{Index: 1},
+				Path: Path{
+					IndexedPathElem{
+						Index: 1,
+					},
+				},
 				Message: msgIntNotEqual,
 				V1:      int64(2),
 				V2:      int64(0),
@@ -215,7 +219,11 @@ var compareTestCases = []struct {
 		v2:   []int{1, 0, 3},
 		expected: Result{
 			Difference{
-				Path:    IndexedPath{Index: 1},
+				Path: Path{
+					IndexedPathElem{
+						Index: 1,
+					},
+				},
 				Message: msgIntNotEqual,
 				V1:      int64(2),
 				V2:      int64(0),
@@ -256,7 +264,11 @@ var compareTestCases = []struct {
 		}(),
 		expected: Result{
 			Difference{
-				Path:    IndexedPath{Index: 0},
+				Path: Path{
+					IndexedPathElem{
+						Index: 0,
+					},
+				},
 				Message: msgUintNotEqual,
 				V1:      uint64(0),
 				V2:      uint64(1),
@@ -283,7 +295,11 @@ var compareTestCases = []struct {
 			r := make(Result, MaxSliceDifferences)
 			for i := range r {
 				r[i] = Difference{
-					Path:    IndexedPath{Index: i},
+					Path: Path{
+						IndexedPathElem{
+							Index: i,
+						},
+					},
 					Message: msgIntNotEqual,
 					V1:      int64(i),
 					V2:      int64(i + 1),
@@ -308,7 +324,11 @@ var compareTestCases = []struct {
 		v2:   [1]any{nil},
 		expected: Result{
 			Difference{
-				Path:    IndexedPath{Index: 0},
+				Path: Path{
+					IndexedPathElem{
+						Index: 0,
+					},
+				},
 				Message: msgOnlyOneIsNil,
 				V1:      false,
 				V2:      true,
@@ -372,7 +392,11 @@ var compareTestCases = []struct {
 		},
 		expected: Result{
 			Difference{
-				Path:    StructPath{Field: "Exported"},
+				Path: Path{
+					StructPathElem{
+						Field: "Exported",
+					},
+				},
 				Message: msgIntNotEqual,
 				V1:      int64(1),
 				V2:      int64(2),
@@ -391,7 +415,11 @@ var compareTestCases = []struct {
 		},
 		expected: Result{
 			Difference{
-				Path:    StructPath{Field: "unexported"},
+				Path: Path{
+					StructPathElem{
+						Field: "unexported",
+					},
+				},
 				Message: msgIntNotEqual,
 				V1:      int64(1),
 				V2:      int64(2),
@@ -434,7 +462,11 @@ var compareTestCases = []struct {
 		},
 		expected: Result{
 			Difference{
-				Path:    MapPath{Key: "i"},
+				Path: Path{
+					MapPathElem{
+						Key: "i",
+					},
+				},
 				Message: msgIntNotEqual,
 				V1:      int64(1),
 				V2:      int64(2),
@@ -451,13 +483,21 @@ var compareTestCases = []struct {
 		},
 		expected: Result{
 			Difference{
-				Path:    MapPath{Key: "a"},
+				Path: Path{
+					MapPathElem{
+						Key: "a",
+					},
+				},
 				Message: msgMapKeyNotDefined,
 				V1:      true,
 				V2:      false,
 			},
 			Difference{
-				Path:    MapPath{Key: "b"},
+				Path: Path{
+					MapPathElem{
+						Key: "b",
+					},
+				},
 				Message: msgMapKeyNotDefined,
 				V1:      false,
 				V2:      true,
@@ -583,7 +623,11 @@ var compareTestCases = []struct {
 		v2:   [1]func(){testFunc},
 		expected: Result{
 			Difference{
-				Path:    IndexedPath{Index: 0},
+				Path: Path{
+					IndexedPathElem{
+						Index: 0,
+					},
+				},
 				Message: msgFuncPointerNotEqual,
 				V1:      uintptr(0),
 				V2:      reflect.ValueOf(testFunc).Pointer(),
