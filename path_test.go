@@ -19,8 +19,8 @@ func TestPathString(t *testing.T) {
 		{
 			name: "Struct",
 			path: Path{
-				StructPathElem{
-					Field: "test",
+				{
+					Struct: toPtr("test"),
 				},
 			},
 			expected: ".test",
@@ -28,17 +28,17 @@ func TestPathString(t *testing.T) {
 		{
 			name: "Map",
 			path: Path{
-				MapPathElem{
-					Key: "test",
+				{
+					Map: toPtr("test"),
 				},
 			},
 			expected: "[test]",
 		},
 		{
-			name: "Indexed",
+			name: "Index",
 			path: Path{
-				IndexedPathElem{
-					Index: 1,
+				{
+					Index: toPtr(1),
 				},
 			},
 			expected: "[1]",
@@ -46,14 +46,14 @@ func TestPathString(t *testing.T) {
 		{
 			name: "All",
 			path: Path{
-				IndexedPathElem{
-					Index: 1,
+				{
+					Index: toPtr(1),
 				},
-				MapPathElem{
-					Key: "test",
+				{
+					Map: toPtr("test"),
 				},
-				StructPathElem{
-					Field: "test",
+				{
+					Struct: toPtr("test"),
 				},
 			},
 			expected: ".test[test][1]",

@@ -178,8 +178,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					IndexedPathElem{
-						Index: 1,
+					{
+						Index: toPtr(1),
 					},
 				},
 				Message: msgIntNotEqual,
@@ -220,8 +220,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					IndexedPathElem{
-						Index: 1,
+					{
+						Index: toPtr(1),
 					},
 				},
 				Message: msgIntNotEqual,
@@ -265,8 +265,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					IndexedPathElem{
-						Index: 0,
+					{
+						Index: toPtr(0),
 					},
 				},
 				Message: msgUintNotEqual,
@@ -296,8 +296,8 @@ var compareTestCases = []struct {
 			for i := range r {
 				r[i] = Difference{
 					Path: Path{
-						IndexedPathElem{
-							Index: i,
+						{
+							Index: toPtr(i),
 						},
 					},
 					Message: msgIntNotEqual,
@@ -325,8 +325,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					IndexedPathElem{
-						Index: 0,
+					{
+						Index: toPtr(0),
 					},
 				},
 				Message: msgOnlyOneIsNil,
@@ -393,8 +393,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					StructPathElem{
-						Field: "Exported",
+					{
+						Struct: toPtr("Exported"),
 					},
 				},
 				Message: msgIntNotEqual,
@@ -416,8 +416,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					StructPathElem{
-						Field: "unexported",
+					{
+						Struct: toPtr("unexported"),
 					},
 				},
 				Message: msgIntNotEqual,
@@ -463,8 +463,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					MapPathElem{
-						Key: "i",
+					{
+						Map: toPtr("i"),
 					},
 				},
 				Message: msgIntNotEqual,
@@ -484,8 +484,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					MapPathElem{
-						Key: "a",
+					{
+						Map: toPtr("a"),
 					},
 				},
 				Message: msgMapKeyNotDefined,
@@ -494,8 +494,8 @@ var compareTestCases = []struct {
 			},
 			Difference{
 				Path: Path{
-					MapPathElem{
-						Key: "b",
+					{
+						Map: toPtr("b"),
 					},
 				},
 				Message: msgMapKeyNotDefined,
@@ -624,8 +624,8 @@ var compareTestCases = []struct {
 		expected: Result{
 			Difference{
 				Path: Path{
-					IndexedPathElem{
-						Index: 0,
+					{
+						Index: toPtr(0),
 					},
 				},
 				Message: msgFuncPointerNotEqual,

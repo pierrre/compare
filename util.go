@@ -99,4 +99,8 @@ func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
 	}
 }
 
+func toPtr[V any](v V) *V {
+	return &v
+}
+
 var bufPool = bufpool.Pool{}

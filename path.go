@@ -24,43 +24,21 @@ func (p Path) String() string {
 }
 
 // PathElem is a single element in a Path.
-type PathElem interface {
-	String() string
-	pathElem()
+type PathElem struct {
+	Struct *string
+	Map    *string
+	Index  *int
 }
 
-// StructPathElem is a PathElem for a struct field.
-type StructPathElem struct {
-	Field string
+func (e PathElem) String() string {
+	if e.Struct != nil {
+		return "." + *e.Struct
+	}
+	if e.Map != nil {
+		return "[" + *e.Map + "]"
+	}
+	if e.Index != nil {
+		return "[" + strconv.Itoa(*e.Index) + "]"
+	}
+	return ""
 }
-
-// String returns the string representation.
-func (e StructPathElem) String() string {
-	return "." + e.Field
-}
-
-func (e StructPathElem) pathElem() {}
-
-// MapPathElem is a PathElem for a map key.
-type MapPathElem struct {
-	Key string
-}
-
-// String returns the string representation.
-func (e MapPathElem) String() string {
-	return "[" + e.Key + "]"
-}
-
-func (e MapPathElem) pathElem() {}
-
-// IndexedPathElem is a PathElem for a slice/array index.
-type IndexedPathElem struct {
-	Index int
-}
-
-// String returns the string representation.
-func (e IndexedPathElem) String() string {
-	return "[" + strconv.Itoa(e.Index) + "]"
-}
-
-func (e IndexedPathElem) pathElem() {}
