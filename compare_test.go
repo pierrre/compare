@@ -1,6 +1,7 @@
 package compare
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"math/big"
@@ -27,6 +28,61 @@ func init() {
 	}
 	pierrrepretty.ConfigureDefault()
 	pierrreerrors.Configure()
+}
+
+func ExampleCompare() {
+	type T struct {
+		String string
+		Int    int
+		Map    map[string]any
+		Slice  []int
+	}
+	v1 := T{
+		String: "aaa",
+		Int:    1,
+		Map: map[string]any{
+			"a": "a",
+			"b": "b",
+			"c": "c",
+		},
+		Slice: []int{1, 2, 3},
+	}
+	v2 := T{
+		String: "bbb",
+		Int:    2,
+		Map: map[string]any{
+			"a": "z",
+			"b": 5,
+			"d": "c",
+		},
+		Slice: []int{1, 2, 4},
+	}
+	diff := Compare(v1, v2)
+	if len(diff) != 0 {
+		fmt.Printf("%+v", diff)
+	}
+	// Output:
+	// .String: string not equal
+	// 	v1="aaa"
+	// 	v2="bbb"
+	// .Int: int not equal
+	// 	v1=1
+	// 	v2=2
+	// .Map[a]: string not equal
+	// 	v1="a"
+	// 	v2="z"
+	// .Map[b]: type not equal
+	// 	v1=string
+	// 	v2=int
+	// .Map[c]: map key not defined
+	// 	v1=true
+	// 	v2=false
+	// .Map[d]: map key not defined
+	// 	v1=false
+	// 	v2=true
+	// .Slice[2]: int not equal
+	// 	v1=3
+	// 	v2=4
 }
 
 var compareTestCases = []struct {
@@ -801,4 +857,218 @@ var (
 type testStruct struct {
 	Exported   int
 	unexported int
+}
+
+var testResult = Result{
+	Difference{
+		Message: "test1",
+		V1:      1,
+		V2:      2,
+	},
+	Difference{
+		Message: "test2",
+		V1:      "a",
+		V2:      "b",
+	},
+}
+
+func TestResultFormat(t *testing.T) {
+	s := fmt.Sprintf("%+v", testResult)
+	expected := ".: test1\n\tv1=1\n\tv2=2\n.: test2\n\tv1=\"a\"\n\tv2=\"b\""
+	assert.Equal(t, s, expected)
+}
+
+func BenchmarkResultFormat(b *testing.B) {
+	var it any = testResult
+	buf := new(bytes.Buffer)
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		_, _ = fmt.Fprintf(buf, "%+v", it)
+	}
+}
+
+func TestResultFormatEmpty(t *testing.T) {
+	var r Result
+	s := fmt.Sprintf("%+v", r)
+	expected := "<none>"
+	assert.Equal(t, s, expected)
+}
+
+func TestResultFormatUnsupportedVerb(t *testing.T) {
+	var r Result
+	s := fmt.Sprintf("%s", r)
+	expected := "%!s(compare.Result)"
+	assert.Equal(t, s, expected)
+}
+
+func TestDifferenceFormatUnsupportedVerb(t *testing.T) {
+	var d Difference
+	s := fmt.Sprintf("%s", d)
+	expected := "%!s(compare.Difference)"
+	assert.Equal(t, s, expected)
+}
+
+func TestPathString(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		path     Path
+		expected string
+	}{
+		{
+			name:     "Empty",
+			expected: ".",
+		},
+		{
+			name: "Struct",
+			path: Path{
+				{
+					Struct: toPtr("test"),
+				},
+			},
+			expected: ".test",
+		},
+		{
+			name: "Map",
+			path: Path{
+				{
+					Map: toPtr("test"),
+				},
+			},
+			expected: "[test]",
+		},
+		{
+			name: "Index",
+			path: Path{
+				{
+					Index: toPtr(1),
+				},
+			},
+			expected: "[1]",
+		},
+		{
+			name: "All",
+			path: Path{
+				{
+					Index: toPtr(1),
+				},
+				{
+					Map: toPtr("test"),
+				},
+				{
+					Struct: toPtr("test"),
+				},
+			},
+			expected: ".test[test][1]",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := tc.path.String()
+			assert.Equal(t, s, tc.expected)
+		})
+	}
+}
+
+var sortValuesTestCases = []struct {
+	name     string
+	values   []reflect.Value
+	typ      reflect.Type
+	expected []reflect.Value
+}{
+	{
+		name: "Bool",
+		values: []reflect.Value{
+			reflect.ValueOf(true),
+			reflect.ValueOf(false),
+		},
+		typ: reflect.TypeOf(false),
+		expected: []reflect.Value{
+			reflect.ValueOf(false),
+			reflect.ValueOf(true),
+		},
+	},
+	{
+		name: "Int",
+		values: []reflect.Value{
+			reflect.ValueOf(int(2)),
+			reflect.ValueOf(int(1)),
+		},
+		typ: reflect.TypeOf(int(0)),
+		expected: []reflect.Value{
+			reflect.ValueOf(int(1)),
+			reflect.ValueOf(int(2)),
+		},
+	},
+	{
+		name: "Uint",
+		values: []reflect.Value{
+			reflect.ValueOf(uint(2)),
+			reflect.ValueOf(uint(1)),
+		},
+		typ: reflect.TypeOf(uint(0)),
+		expected: []reflect.Value{
+			reflect.ValueOf(uint(1)),
+			reflect.ValueOf(uint(2)),
+		},
+	},
+	{
+		name: "Float",
+		values: []reflect.Value{
+			reflect.ValueOf(float64(2)),
+			reflect.ValueOf(float64(1)),
+		},
+		typ: reflect.TypeOf(float64(0)),
+		expected: []reflect.Value{
+			reflect.ValueOf(float64(1)),
+			reflect.ValueOf(float64(2)),
+		},
+	},
+	{
+		name: "Complex",
+		values: []reflect.Value{
+			reflect.ValueOf(complex(1, 1)),
+			reflect.ValueOf(complex(2, 2)),
+			reflect.ValueOf(complex(2, 1)),
+			reflect.ValueOf(complex(1, 2)),
+		},
+		typ: reflect.TypeOf(complex(0, 0)),
+		expected: []reflect.Value{
+			reflect.ValueOf(complex(1, 1)),
+			reflect.ValueOf(complex(1, 2)),
+			reflect.ValueOf(complex(2, 1)),
+			reflect.ValueOf(complex(2, 2)),
+		},
+	},
+	{
+		name: "String",
+		values: []reflect.Value{
+			reflect.ValueOf("b"),
+			reflect.ValueOf("a"),
+		},
+		typ: reflect.TypeOf(""),
+		expected: []reflect.Value{
+			reflect.ValueOf("a"),
+			reflect.ValueOf("b"),
+		},
+	},
+	{
+		name: "NetIP",
+		values: []reflect.Value{
+			reflect.ValueOf(net.ParseIP("2.2.2.2")),
+			reflect.ValueOf(net.ParseIP("1.1.1.1")),
+		},
+		typ: reflect.TypeOf(net.IP{}),
+		expected: []reflect.Value{
+			reflect.ValueOf(net.ParseIP("1.1.1.1")),
+			reflect.ValueOf(net.ParseIP("2.2.2.2")),
+		},
+	},
+}
+
+func TestSortValues(t *testing.T) {
+	for _, tc := range sortValuesTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			sortValues(tc.values, tc.typ)
+			assert.DeepEqual(t, tc.values, tc.expected)
+		})
+	}
 }
