@@ -7,17 +7,6 @@ import (
 // Result is a list of Difference.
 type Result []Difference
 
-// Merge merges 2 Result.
-func (r Result) Merge(rm Result) Result {
-	if len(rm) == 0 {
-		return r
-	}
-	if len(r) == 0 {
-		return rm
-	}
-	return append(r, rm...)
-}
-
 // Format implements fmt.Formatter.
 //
 // See Difference.Format() for supported verb and flag.

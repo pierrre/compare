@@ -179,7 +179,7 @@ func compareArray(v1, v2 reflect.Value) Result {
 	diffCount := 0
 	for i, n := 0, v1.Len(); i < n; i++ {
 		ri := compareArrayIndex(v1, v2, i)
-		r = r.Merge(ri)
+		r = append(r, ri...)
 		if len(ri) > 0 {
 			diffCount++
 			if diffCount >= MaxSliceDifferences && MaxSliceDifferences > 0 {
@@ -234,7 +234,7 @@ func compareStruct(v1, v2 reflect.Value) Result {
 	var r Result
 	t := v1.Type()
 	for i, n := 0, t.NumField(); i < n; i++ {
-		r = r.Merge(compareStructField(v1, v2, i))
+		r = append(r, compareStructField(v1, v2, i)...)
 	}
 	return r
 }
@@ -260,7 +260,7 @@ func compareMap(v1, v2 reflect.Value) Result {
 	}
 	var r Result
 	for _, k := range getMapsKeys(v1, v2) {
-		r = r.Merge(compareMapKey(v1, v2, k))
+		r = append(r, compareMapKey(v1, v2, k)...)
 	}
 	return r
 }
