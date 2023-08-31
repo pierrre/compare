@@ -4,12 +4,11 @@ package compare
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/pierrre/go-libs/bufpool"
 )
 
 // MaxSliceDifferences is the maximum number of differences for a slice.
@@ -438,20 +437,14 @@ type Difference struct {
 // By default, it show the path and message.
 // The '+' flag shows values V1 and V2.
 func (d Difference) Format(s fmt.State, verb rune) {
-	// We use a buffer in order to reduce memory allocation.
-	// fmt.State (and its real type) doesn't (yet?) implement WriteString().
-	// TODO remove ?
-	buf := bufPool.Get()
 	if verb == 'v' {
-		_, _ = buf.WriteString(d.Path.String() + ": " + d.Message)
+		_, _ = io.WriteString(s, d.Path.String()+": "+d.Message)
 		if s.Flag('+') {
-			_, _ = fmt.Fprintf(buf, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
+			_, _ = fmt.Fprintf(s, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
 		}
 	} else {
-		_, _ = fmt.Fprintf(buf, "%%!%c(%T)", verb, d)
+		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, d)
 	}
-	_, _ = buf.WriteTo(s)
-	bufPool.Put(buf)
 }
 
 func (d Difference) getValueFormat(v any) string {
@@ -718,5 +711,3 @@ func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
 func toPtr[V any](v V) *V {
 	return &v
 }
-
-var bufPool = bufpool.Pool{}
