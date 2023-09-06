@@ -3,10 +3,10 @@ package compare
 import (
 	"bytes"
 	"fmt"
-	"image"
 	"math/big"
 	"net"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 	"unsafe" //nolint:depguard // Used for unsafe.Pointer comparison.
@@ -334,21 +334,21 @@ var compareTestCases = []struct {
 	{
 		name: "SliceNotEqualMaxDifferences",
 		v1: func() []int {
-			s := make([]int, MaxSliceDifferences*2)
+			s := make([]int, DefaultComparator.SliceMaxDifferences*2)
 			for i := range s {
 				s[i] = i
 			}
 			return s
 		}(),
 		v2: func() []int {
-			s := make([]int, MaxSliceDifferences*2)
+			s := make([]int, DefaultComparator.SliceMaxDifferences*2)
 			for i := range s {
 				s[i] = i + 1
 			}
 			return s
 		}(),
 		expected: func() Result {
-			r := make(Result, MaxSliceDifferences)
+			r := make(Result, DefaultComparator.SliceMaxDifferences)
 			for i := range r {
 				r[i] = Difference{
 					Path: Path{
@@ -592,6 +592,39 @@ var compareTestCases = []struct {
 		},
 	},
 	{
+		name: "MapNotEqualMaxDifferences",
+		v1: func() map[int]int {
+			m := make(map[int]int)
+			for i := 0; i < DefaultComparator.SliceMaxDifferences*2; i++ {
+				m[i] = i
+			}
+			return m
+		}(),
+		v2: func() map[int]int {
+			m := make(map[int]int)
+			for i := 0; i < DefaultComparator.SliceMaxDifferences*2; i++ {
+				m[i] = i + 1
+			}
+			return m
+		}(),
+		expected: func() Result {
+			r := make(Result, DefaultComparator.SliceMaxDifferences)
+			for i := range r {
+				r[i] = Difference{
+					Path: Path{
+						{
+							Map: toPtr(strconv.Itoa(i)),
+						},
+					},
+					Message: msgIntNotEqual,
+					V1:      int64(i),
+					V2:      int64(i + 1),
+				}
+			}
+			return r
+		}(),
+	},
+	{
 		name: "UnsafePointerEqual",
 		v1:   unsafe.Pointer(&testInt), //nolint:gosec // Ignore for testing.
 		v2:   unsafe.Pointer(&testInt), //nolint:gosec // Ignore for testing.
@@ -712,7 +745,7 @@ var compareTestCases = []struct {
 		v2:   time.Unix(1136239446, 0),
 		expected: Result{
 			Difference{
-				Message: fmt.Sprintf(msgMethodNotEqual, "Equal"),
+				Message: msgMethodEqualFalse,
 				V1:      time.Unix(1136239445, 0),
 				V2:      time.Unix(1136239446, 0),
 			},
@@ -729,31 +762,9 @@ var compareTestCases = []struct {
 		v2:   net.ParseIP("222.222.222.222"),
 		expected: Result{
 			Difference{
-				Message: fmt.Sprintf(msgMethodNotEqual, "Equal"),
+				Message: msgMethodEqualFalse,
 				V1:      net.ParseIP("111.111.111.111"),
 				V2:      net.ParseIP("222.222.222.222"),
-			},
-		},
-	},
-	{
-		name: "ImageRectangeEqual",
-		v1:   image.Rect(0, 0, 1, 1),
-		v2:   image.Rect(0, 0, 1, 1),
-	},
-	{
-		name: "ImageRectangeEqualEmpty",
-		v1:   image.Rect(1, 1, 1, 1),
-		v2:   image.Rect(2, 2, 2, 2),
-	},
-	{
-		name: "ImageRectangeNotEqual",
-		v1:   image.Rect(0, 0, 1, 1),
-		v2:   image.Rect(0, 0, 2, 2),
-		expected: Result{
-			Difference{
-				Message: fmt.Sprintf(msgMethodNotEqual, "Eq"),
-				V1:      image.Rect(0, 0, 1, 1),
-				V2:      image.Rect(0, 0, 2, 2),
 			},
 		},
 	},
@@ -968,7 +979,7 @@ func TestPathString(t *testing.T) {
 	}
 }
 
-var sortValuesTestCases = []struct {
+var sortMapsKeysTestCases = []struct {
 	name     string
 	values   []reflect.Value
 	typ      reflect.Type
@@ -1064,10 +1075,10 @@ var sortValuesTestCases = []struct {
 	},
 }
 
-func TestSortValues(t *testing.T) {
-	for _, tc := range sortValuesTestCases {
+func TestSortMapsKeys(t *testing.T) {
+	for _, tc := range sortMapsKeysTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			sortValues(tc.values, tc.typ)
+			sortMapsKeys(tc.typ, tc.values)
 			assert.DeepEqual(t, tc.values, tc.expected)
 		})
 	}
