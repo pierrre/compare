@@ -3,42 +3,81 @@ package compare
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"io"
 	"reflect"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 )
 
-// MaxSliceDifferences is the maximum number of differences for a slice.
-// If the value is reached, the comparison is stopped for the current slice.
-// It is also used for array.
-// Set to 0 disables it.
-var MaxSliceDifferences = 10
+// Compare compares 2 values with DefaultComparator.
+func Compare(v1, v2 any) Result {
+	return DefaultComparator.Compare(v1, v2)
+}
+
+// DefaultComparator is the default Comparator.
+var DefaultComparator = NewComparator()
+
+// Comparator compares 2 values.
+//
+// It should be created with NewComparator().
+type Comparator struct {
+	// SliceMaxDifferences is the maximum number of different items for a slice.
+	// If the value is reached, the comparison is stopped for the current slice.
+	// It is also used for array.
+	// Set to 0 disables it.
+	// Default: 10.
+	SliceMaxDifferences int
+
+	// MapMaxDifferences is the maximum number of different items for a map.
+	// If the value is reached, the comparison is stopped for the current map.
+	// Set to 0 disables it.
+	// Default: 10.
+	MapMaxDifferences int
+
+	// Funcs is the list of custom comparison functions.
+	// Default: []byte, reflect.Value, .Equal().
+	Funcs []Func
+}
+
+// NewComparator returns a new Comparator initialized with default values.
+func NewComparator() *Comparator {
+	return &Comparator{
+		SliceMaxDifferences: 10,
+		MapMaxDifferences:   10,
+		Funcs: []Func{
+			NewBytesEqualFunc(),
+			NewReflectValueFunc(),
+			NewMethodEqualFunc(),
+			NewMethodCmpFunc(),
+		},
+	}
+}
 
 // Compare compares 2 values.
-func Compare(v1, v2 any) Result {
-	return compare(
+func (c *Comparator) Compare(v1, v2 any) Result {
+	return c.compare(
 		reflect.ValueOf(v1),
 		reflect.ValueOf(v2),
 	)
 }
 
-func compare(v1, v2 reflect.Value) Result {
-	if r, stop := compareValid(v1, v2); stop {
+func (c *Comparator) compare(v1, v2 reflect.Value) Result {
+	if r, stop := c.compareValid(v1, v2); stop {
 		return r
 	}
-	if r, stop := compareType(v1, v2); stop {
+	if r, stop := c.compareType(v1, v2); stop {
 		return r
 	}
-	if r, stop := compareFuncs(v1, v2); stop {
+	if r, stop := c.compareFuncs(v1, v2); stop {
 		return r
 	}
-	return compareKind(v1, v2)
+	return c.compareKind(v1, v2)
 }
 
-func compareValid(v1, v2 reflect.Value) (Result, bool) {
+func (c *Comparator) compareValid(v1, v2 reflect.Value) (Result, bool) {
 	vl1 := v1.IsValid()
 	vl2 := v2.IsValid()
 	if vl1 && vl2 {
@@ -54,7 +93,7 @@ func compareValid(v1, v2 reflect.Value) (Result, bool) {
 	}}, true
 }
 
-func compareType(v1, v2 reflect.Value) (Result, bool) {
+func (c *Comparator) compareType(v1, v2 reflect.Value) (Result, bool) {
 	t1 := v1.Type()
 	t2 := v2.Type()
 	if t1 == t2 {
@@ -68,45 +107,43 @@ func compareType(v1, v2 reflect.Value) (Result, bool) {
 }
 
 //nolint:gocyclo // Large switch/case is OK.
-func compareKind(v1, v2 reflect.Value) Result {
-	switch v1.Kind() {
+func (c *Comparator) compareKind(v1, v2 reflect.Value) Result {
+	switch v1.Kind() { //nolint:exhaustive // All kinds are handled, Invalid should not happen.
 	case reflect.Bool:
-		return compareBool(v1, v2)
+		return c.compareBool(v1, v2)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return compareInt(v1, v2)
+		return c.compareInt(v1, v2)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return compareUint(v1, v2)
+		return c.compareUint(v1, v2)
 	case reflect.Float32, reflect.Float64:
-		return compareFloat(v1, v2)
+		return c.compareFloat(v1, v2)
 	case reflect.Complex64, reflect.Complex128:
-		return compareComplex(v1, v2)
+		return c.compareComplex(v1, v2)
 	case reflect.String:
-		return compareString(v1, v2)
+		return c.compareString(v1, v2)
 	case reflect.Array:
-		return compareArray(v1, v2)
+		return c.compareArray(v1, v2)
 	case reflect.Slice:
-		return compareSlice(v1, v2)
+		return c.compareSlice(v1, v2)
 	case reflect.Interface:
-		return compareInterface(v1, v2)
+		return c.compareInterface(v1, v2)
 	case reflect.Pointer:
-		return comparePointer(v1, v2)
+		return c.comparePointer(v1, v2)
 	case reflect.Struct:
-		return compareStruct(v1, v2)
+		return c.compareStruct(v1, v2)
 	case reflect.Map:
-		return compareMap(v1, v2)
+		return c.compareMap(v1, v2)
 	case reflect.UnsafePointer:
-		return compareUnsafePointer(v1, v2)
+		return c.compareUnsafePointer(v1, v2)
 	case reflect.Chan:
-		return compareChan(v1, v2)
+		return c.compareChan(v1, v2)
 	case reflect.Func:
-		return compareFunc(v1, v2)
-	case reflect.Invalid:
-		return nil
+		return c.compareFunc(v1, v2)
 	}
 	return nil
 }
 
-func compareBool(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareBool(v1, v2 reflect.Value) Result {
 	b1 := v1.Bool()
 	b2 := v2.Bool()
 	if b1 == b2 {
@@ -119,7 +156,7 @@ func compareBool(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareInt(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareInt(v1, v2 reflect.Value) Result {
 	i1 := v1.Int()
 	i2 := v2.Int()
 	if i1 == i2 {
@@ -132,7 +169,7 @@ func compareInt(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareUint(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareUint(v1, v2 reflect.Value) Result {
 	u1 := v1.Uint()
 	u2 := v2.Uint()
 	if u1 == u2 {
@@ -145,7 +182,7 @@ func compareUint(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareFloat(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareFloat(v1, v2 reflect.Value) Result {
 	f1 := v1.Float()
 	f2 := v2.Float()
 	if f1 == f2 {
@@ -158,7 +195,7 @@ func compareFloat(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareComplex(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareComplex(v1, v2 reflect.Value) Result {
 	c1 := v1.Complex()
 	c2 := v2.Complex()
 	if c1 == c2 {
@@ -171,7 +208,7 @@ func compareComplex(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareString(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareString(v1, v2 reflect.Value) Result {
 	s1 := v1.String()
 	s2 := v2.String()
 	if s1 == s2 {
@@ -184,15 +221,15 @@ func compareString(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareArray(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareArray(v1, v2 reflect.Value) Result {
 	var r Result
 	diffCount := 0
 	for i, n := 0, v1.Len(); i < n; i++ {
-		ri := compareArrayIndex(v1, v2, i)
+		ri := c.compareArrayIndex(v1, v2, i)
 		r = append(r, ri...)
 		if len(ri) > 0 {
 			diffCount++
-			if diffCount >= MaxSliceDifferences && MaxSliceDifferences > 0 {
+			if diffCount >= c.SliceMaxDifferences && c.SliceMaxDifferences > 0 {
 				break
 			}
 		}
@@ -200,8 +237,8 @@ func compareArray(v1, v2 reflect.Value) Result {
 	return r
 }
 
-func compareArrayIndex(v1, v2 reflect.Value, i int) Result {
-	r := compare(v1.Index(i), v2.Index(i))
+func (c *Comparator) compareArrayIndex(v1, v2 reflect.Value, i int) Result {
+	r := c.compare(v1.Index(i), v2.Index(i))
 	if len(r) == 0 {
 		return nil
 	}
@@ -214,43 +251,38 @@ func compareArrayIndex(v1, v2 reflect.Value, i int) Result {
 	return r
 }
 
-var typeByteSlice = reflect.TypeOf([]byte(nil))
-
-func compareSlice(v1, v2 reflect.Value) Result {
-	if r, stop := compareNilLenPointer(v1, v2); stop {
+func (c *Comparator) compareSlice(v1, v2 reflect.Value) Result {
+	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
 	}
-	if v1.Type() == typeByteSlice && bytes.Equal(v1.Bytes(), v2.Bytes()) {
-		return nil
-	}
-	return compareArray(v1, v2)
+	return c.compareArray(v1, v2)
 }
 
-func compareInterface(v1, v2 reflect.Value) Result {
-	if r, stop := compareNil(v1, v2); stop {
+func (c *Comparator) compareInterface(v1, v2 reflect.Value) Result {
+	if r, stop := c.compareNil(v1, v2); stop {
 		return r
 	}
-	return compare(v1.Elem(), v2.Elem())
+	return c.compare(v1.Elem(), v2.Elem())
 }
 
-func comparePointer(v1, v2 reflect.Value) Result {
+func (c *Comparator) comparePointer(v1, v2 reflect.Value) Result {
 	if v1.Pointer() == v2.Pointer() {
 		return nil
 	}
-	return compare(v1.Elem(), v2.Elem())
+	return c.compare(v1.Elem(), v2.Elem())
 }
 
-func compareStruct(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareStruct(v1, v2 reflect.Value) Result {
 	var r Result
 	t := v1.Type()
 	for i, n := 0, t.NumField(); i < n; i++ {
-		r = append(r, compareStructField(v1, v2, i)...)
+		r = append(r, c.compareStructField(v1, v2, i)...)
 	}
 	return r
 }
 
-func compareStructField(v1, v2 reflect.Value, i int) Result {
-	r := compare(v1.Field(i), v2.Field(i))
+func (c *Comparator) compareStructField(v1, v2 reflect.Value, i int) Result {
+	r := c.compare(v1.Field(i), v2.Field(i))
 	if len(r) == 0 {
 		return nil
 	}
@@ -264,18 +296,84 @@ func compareStructField(v1, v2 reflect.Value, i int) Result {
 	return r
 }
 
-func compareMap(v1, v2 reflect.Value) Result {
-	if r, stop := compareNilLenPointer(v1, v2); stop {
+func (c *Comparator) compareMap(v1, v2 reflect.Value) Result {
+	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
 	}
 	var r Result
-	for _, k := range getMapsKeys(v1, v2) {
-		r = append(r, compareMapKey(v1, v2, k)...)
+	diffCount := 0
+	for _, k := range getSortedMapsKeys(v1, v2) {
+		ri := c.compareMapKey(v1, v2, k)
+		r = append(r, ri...)
+		if len(ri) > 0 {
+			diffCount++
+			if diffCount >= c.MapMaxDifferences && c.MapMaxDifferences > 0 {
+				break
+			}
+		}
 	}
 	return r
 }
 
-func compareMapKey(v1, v2, k reflect.Value) Result {
+func getSortedMapsKeys(v1, v2 reflect.Value) []reflect.Value {
+	ks := getMapsKeys(v1, v2)
+	sortMapsKeys(v1.Type().Key(), ks)
+	return ks
+}
+
+func getMapsKeys(v1, v2 reflect.Value) []reflect.Value {
+	ks := v1.MapKeys()
+	for _, k2 := range v2.MapKeys() {
+		if !v1.MapIndex(k2).IsValid() {
+			ks = append(ks, k2)
+		}
+	}
+	return ks
+}
+
+func sortMapsKeys(typ reflect.Type, s []reflect.Value) {
+	sortCmp := getMapsKeysSortCmp(typ)
+	slices.SortFunc(s, sortCmp)
+}
+
+func getMapsKeysSortCmp(typ reflect.Type) func(a, b reflect.Value) int {
+	switch typ.Kind() { //nolint:exhaustive // Optimized for common kinds, the default case is less optimized.
+	case reflect.Bool:
+		return func(a, b reflect.Value) int {
+			ab := a.Bool()
+			bb := b.Bool()
+			if ab == bb {
+				return 0
+			}
+			if !ab {
+				return -1
+			}
+			return 1
+		}
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return func(a, b reflect.Value) int {
+			return cmp.Compare(a.Int(), b.Int())
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return func(a, b reflect.Value) int {
+			return cmp.Compare(a.Uint(), b.Uint())
+		}
+	case reflect.Float32, reflect.Float64:
+		return func(a, b reflect.Value) int {
+			return cmp.Compare(a.Float(), b.Float())
+		}
+	case reflect.String:
+		return func(a, b reflect.Value) int {
+			return cmp.Compare(a.String(), b.String())
+		}
+	default:
+		return func(a, b reflect.Value) int {
+			return cmp.Compare(fmt.Sprint(a), fmt.Sprint(b))
+		}
+	}
+}
+
+func (c *Comparator) compareMapKey(v1, v2, k reflect.Value) Result {
 	v1 = v1.MapIndex(k)
 	v2 = v2.MapIndex(k)
 	vl1 := v1.IsValid()
@@ -290,7 +388,7 @@ func compareMapKey(v1, v2, k reflect.Value) Result {
 			V2:      vl2,
 		}}
 	}
-	r := compare(v1, v2)
+	r := c.compare(v1, v2)
 	if len(r) == 0 {
 		return nil
 	}
@@ -304,7 +402,7 @@ func compareMapKey(v1, v2, k reflect.Value) Result {
 	return r
 }
 
-func compareUnsafePointer(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareUnsafePointer(v1, v2 reflect.Value) Result {
 	p1 := v1.Pointer()
 	p2 := v2.Pointer()
 	if p1 == p2 {
@@ -317,8 +415,8 @@ func compareUnsafePointer(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareChan(v1, v2 reflect.Value) Result {
-	if r, stop := compareNil(v1, v2); stop {
+func (c *Comparator) compareChan(v1, v2 reflect.Value) Result {
+	if r, stop := c.compareNil(v1, v2); stop {
 		return r
 	}
 	if v1.Pointer() == v2.Pointer() {
@@ -345,7 +443,7 @@ func compareChan(v1, v2 reflect.Value) Result {
 	return nil
 }
 
-func compareFunc(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareFunc(v1, v2 reflect.Value) Result {
 	p1 := v1.Pointer()
 	p2 := v2.Pointer()
 	if p1 == p2 {
@@ -358,7 +456,7 @@ func compareFunc(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func compareNil(v1, v2 reflect.Value) (Result, bool) {
+func (c *Comparator) compareNil(v1, v2 reflect.Value) (Result, bool) {
 	nil1 := v1.IsNil()
 	nil2 := v2.IsNil()
 	if nil1 && nil2 {
@@ -374,8 +472,8 @@ func compareNil(v1, v2 reflect.Value) (Result, bool) {
 	return nil, false
 }
 
-func compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
-	if r, stop := compareNil(v1, v2); stop {
+func (c *Comparator) compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
+	if r, stop := c.compareNil(v1, v2); stop {
 		return r, true
 	}
 	len1 := v1.Len()
@@ -394,6 +492,117 @@ func compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
 		return nil, true
 	}
 	return nil, false
+}
+
+// Func represents a comparison function.
+// It is guaranteed that both values are valid and of the same type.
+// If the returned value "stop" is true, the comparison will stop.
+type Func func(c *Comparator, v1, v2 reflect.Value) (r Result, stop bool)
+
+func (c *Comparator) compareFuncs(v1, v2 reflect.Value) (Result, bool) {
+	for _, f := range c.Funcs {
+		if r, stop := f(c, v1, v2); stop {
+			return r, true
+		}
+	}
+	return nil, false
+}
+
+var typeByteSlice = reflect.TypeOf([]byte(nil))
+
+// NewBytesEqualFunc returns a Func that compares byte slices with bytes.Equal().
+func NewBytesEqualFunc() Func {
+	return compareBytesEqual
+}
+
+func compareBytesEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+	if v1.Type() != typeByteSlice {
+		return nil, false
+	}
+	if bytes.Equal(v1.Bytes(), v2.Bytes()) {
+		return nil, true
+	}
+	// If the []byte are not equal,
+	// we want to continue the comparison,
+	// so we will know which elements are not equal.
+	return nil, false
+}
+
+var typeReflectValue = reflect.TypeOf(reflect.Value{})
+
+// NewReflectValueFunc returns a Func that compares reflect.Value.
+func NewReflectValueFunc() Func {
+	return compareReflectValue
+}
+
+func compareReflectValue(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+	if v1.Type() != typeReflectValue {
+		return nil, false
+	}
+	if !v1.CanInterface() || !v2.CanInterface() {
+		// Stop the comparison here.
+		// We don't want to compare the structs.
+		return nil, true
+	}
+	v1 = v1.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
+	v2 = v2.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
+	return c.compare(v1, v2), true
+}
+
+// NewMethodEqualFunc returns a Func that compares with the method .Equal().
+func NewMethodEqualFunc() Func {
+	return compareMethodEqual
+}
+
+func compareMethodEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+	if !v1.CanInterface() || !v2.CanInterface() {
+		return nil, false
+	}
+	met := v1.MethodByName("Equal")
+	if !met.IsValid() {
+		return nil, false
+	}
+	metTyp := met.Type()
+	if metTyp.NumIn() != 1 || metTyp.In(0) != v2.Type() || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(true) {
+		return nil, false
+	}
+	eqRes := met.Call([]reflect.Value{v2})[0].Interface().(bool) //nolint:forcetypeassert // The type of the returned value is already checked above.
+	if eqRes {
+		return nil, true
+	}
+	return Result{Difference{
+		Message: msgMethodEqualFalse,
+		V1:      v1.Interface(),
+		V2:      v2.Interface(),
+	}}, true
+}
+
+// NewMethodCmpFunc returns a Func that compares with the method .Cmp().
+func NewMethodCmpFunc() Func {
+	return compareMethodCmp
+}
+
+func compareMethodCmp(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+	if !v1.CanInterface() || !v2.CanInterface() {
+		return nil, false
+	}
+	met := v1.MethodByName("Cmp")
+	if !met.IsValid() {
+		return nil, false
+	}
+	metTyp := met.Type()
+	if metTyp.NumIn() != 1 || metTyp.In(0) != v2.Type() || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(int(1)) {
+		return nil, false
+	}
+	cmpRes := met.Call([]reflect.Value{v2})[0].Interface().(int) //nolint:forcetypeassert // The type of the returned value is already checked above.
+	if cmpRes == 0 {
+		return nil, true
+	}
+	return Result{Difference{
+		Message: fmt.Sprintf(msgMethodCmpNotEqual, cmpRes),
+		V1:      v1.Interface(),
+		V2:      v2.Interface(),
+	}}, true
 }
 
 // Result is a list of Difference.
@@ -471,7 +680,7 @@ const (
 	msgMapKeyNotDefined      = "map key not defined"
 	msgUnsafePointerNotEqual = "unsafe pointer not equal"
 	msgFuncPointerNotEqual   = "func pointer not equal"
-	msgMethodNotEqual        = "method .%s() returned false"
+	msgMethodEqualFalse      = "method .Equal() returned false"
 	msgMethodCmpNotEqual     = "method .Cmp() returned %d"
 )
 
@@ -511,201 +720,6 @@ func (e PathElem) String() string {
 		return "[" + strconv.Itoa(*e.Index) + "]"
 	}
 	return ""
-}
-
-// Func represents a comparison function.
-// It is guaranteed that both values: are valid, of the same type, and can be converted to any.
-// If the returned value "stop" is true, the comparison will stop.
-type Func func(v1, v2 reflect.Value) (r Result, stop bool)
-
-var funcs []Func
-
-// RegisterFunc registers a Func.
-// It allows to handle manually the comparison for certain values.
-func RegisterFunc(f Func) {
-	funcs = append(funcs, f)
-}
-
-func compareFuncs(v1, v2 reflect.Value) (Result, bool) {
-	if !v1.CanInterface() || !v2.CanInterface() {
-		return nil, false
-	}
-	for _, f := range funcs {
-		if r, stop := f(v1, v2); stop {
-			return r, true
-		}
-	}
-	return nil, false
-}
-
-func init() {
-	RegisterFunc(compareValue)
-	RegisterFunc(compareMethodEqual)
-	RegisterFunc(compareMethodCmp)
-}
-
-var methodEqualNames []string
-
-// RegisterMethodEqual registers an equal method.
-// This methods must be callable as "v1.METHOD(v2) bool".
-func RegisterMethodEqual(name string) {
-	methodEqualNames = append(methodEqualNames, name)
-}
-
-func init() {
-	RegisterMethodEqual("Equal")
-	RegisterMethodEqual("Eq")
-}
-
-func compareMethodEqual(v1, v2 reflect.Value) (Result, bool) {
-	for _, name := range methodEqualNames {
-		r, stop := compareMethodEqualName(v1, v2, name)
-		if stop {
-			return r, true
-		}
-	}
-	return nil, false
-}
-
-func compareMethodEqualName(v1, v2 reflect.Value, name string) (Result, bool) {
-	m := v1.MethodByName(name)
-	if !m.IsValid() {
-		return nil, false
-	}
-	t := m.Type()
-	if t.NumIn() != 1 || t.In(0) != v2.Type() || t.NumOut() != 1 || t.Out(0) != reflect.TypeOf(true) {
-		return nil, false
-	}
-	if m.Call([]reflect.Value{v2})[0].Interface().(bool) { //nolint:forcetypeassert // The type of the returned value is already checked above.
-		return nil, true
-	}
-	return Result{Difference{
-		Message: fmt.Sprintf(msgMethodNotEqual, name),
-		V1:      v1.Interface(),
-		V2:      v2.Interface(),
-	}}, true
-}
-
-func compareMethodCmp(v1, v2 reflect.Value) (Result, bool) {
-	m := v1.MethodByName("Cmp")
-	if !m.IsValid() {
-		return nil, false
-	}
-	t := m.Type()
-	if t.NumIn() != 1 || t.In(0) != v2.Type() || t.NumOut() != 1 || t.Out(0) != reflect.TypeOf(int(1)) {
-		return nil, false
-	}
-	c := m.Call([]reflect.Value{v2})[0].Interface().(int) //nolint:forcetypeassert // The type of the returned value is already checked above.
-	if c == 0 {
-		return nil, true
-	}
-	return Result{Difference{
-		Message: fmt.Sprintf(msgMethodCmpNotEqual, c),
-		V1:      v1.Interface(),
-		V2:      v2.Interface(),
-	}}, true
-}
-
-var typeReflectValue = reflect.TypeOf(reflect.Value{})
-
-func compareValue(v1, v2 reflect.Value) (Result, bool) {
-	if v1.Type() != typeReflectValue {
-		return nil, false
-	}
-	v1 = v1.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
-	v2 = v2.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
-	return compare(v1, v2), true
-}
-
-func getMapsKeys(v1, v2 reflect.Value) []reflect.Value {
-	ks := v1.MapKeys()
-	for _, k2 := range v2.MapKeys() {
-		found := false
-		for _, k := range ks {
-			if len(compare(k2, k)) == 0 {
-				found = true
-				break
-			}
-		}
-		if !found {
-			ks = append(ks, k2)
-		}
-	}
-	sortValues(ks, v1.Type().Key())
-	return ks
-}
-
-func sortValues(s []reflect.Value, t reflect.Type) {
-	sort.Slice(s, newSortLess(s, t))
-}
-
-func newSortLess(s []reflect.Value, t reflect.Type) func(i, j int) bool {
-	switch t.Kind() { //nolint:exhaustive // We have a default case.
-	case reflect.Bool:
-		return newSortLessBool(s)
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return newSortLessInt(s)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return newSortLessUint(s)
-	case reflect.Float32, reflect.Float64:
-		return newSortLessFloat(s)
-	case reflect.Complex64, reflect.Complex128:
-		return newSortLessComplex(s)
-	case reflect.String:
-		return newSortLessString(s)
-	default:
-		return newSortLessGeneric(s)
-	}
-}
-
-func newSortLessBool(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		return !s[i].Bool() && s[j].Bool()
-	}
-}
-
-func newSortLessInt(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		return s[i].Int() < s[j].Int()
-	}
-}
-
-func newSortLessUint(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		return s[i].Uint() < s[j].Uint()
-	}
-}
-
-func newSortLessFloat(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		return s[i].Float() < s[j].Float()
-	}
-}
-
-func newSortLessComplex(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		ci := s[i].Complex()
-		cj := s[j].Complex()
-		if real(ci) < real(cj) {
-			return true
-		}
-		if real(ci) > real(cj) {
-			return false
-		}
-		return imag(ci) < imag(cj)
-	}
-}
-
-func newSortLessString(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		return s[i].String() < s[j].String()
-	}
-}
-
-func newSortLessGeneric(s []reflect.Value) func(i, j int) bool {
-	return func(i, j int) bool {
-		return fmt.Sprint(s[i]) < fmt.Sprint(s[j])
-	}
 }
 
 func toPtr[V any](v V) *V {
