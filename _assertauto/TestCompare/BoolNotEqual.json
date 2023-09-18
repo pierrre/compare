@@ -1,0 +1,13 @@
+{
+	"entries": [
+		{
+			"deep_equal": [
+				{
+					"message": "bool not equal",
+					"v1": "true",
+					"v2": "false"
+				}
+			]
+		}
+	]
+}

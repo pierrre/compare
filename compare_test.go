@@ -6,12 +6,12 @@ import (
 	"math/big"
 	"net"
 	"reflect"
-	"strconv"
 	"testing"
 	"time"
 	"unsafe" //nolint:depguard // Used for unsafe.Pointer comparison.
 
 	"github.com/pierrre/assert"
+	"github.com/pierrre/assert/assertauto"
 	"github.com/pierrre/assert/ext/pierrreerrors"
 	"github.com/pierrre/assert/ext/pierrrepretty"
 )
@@ -86,10 +86,9 @@ func ExampleCompare() {
 }
 
 var compareTestCases = []struct {
-	name     string
-	v1       any
-	v2       any
-	expected Result
+	name string
+	v1   any
+	v2   any
 }{
 	{
 		name: "EqualNotValid",
@@ -100,25 +99,11 @@ var compareTestCases = []struct {
 		name: "NotEqualOnlyOneIsValid",
 		v1:   nil,
 		v2:   true,
-		expected: Result{
-			Difference{
-				Message: msgOnlyOneIsValid,
-				V1:      false,
-				V2:      true,
-			},
-		},
 	},
 	{
 		name: "NotEqualDifferentType",
 		v1:   int32(1),
 		v2:   int64(1),
-		expected: Result{
-			Difference{
-				Message: msgTypeNotEqual,
-				V1:      reflect.TypeOf(int32(0)),
-				V2:      reflect.TypeOf(int64(0)),
-			},
-		},
 	},
 	{
 		name: "BoolEqual",
@@ -129,13 +114,6 @@ var compareTestCases = []struct {
 		name: "BoolNotEqual",
 		v1:   true,
 		v2:   false,
-		expected: Result{
-			Difference{
-				Message: msgBoolNotEqual,
-				V1:      true,
-				V2:      false,
-			},
-		},
 	},
 	{
 		name: "IntEqual",
@@ -146,13 +124,6 @@ var compareTestCases = []struct {
 		name: "IntNotEqual",
 		v1:   int(1),
 		v2:   int(2),
-		expected: Result{
-			Difference{
-				Message: msgIntNotEqual,
-				V1:      int64(1),
-				V2:      int64(2),
-			},
-		},
 	},
 	{
 		name: "UintEqual",
@@ -163,13 +134,6 @@ var compareTestCases = []struct {
 		name: "UintNotEqual",
 		v1:   uint(1),
 		v2:   uint(2),
-		expected: Result{
-			Difference{
-				Message: msgUintNotEqual,
-				V1:      uint64(1),
-				V2:      uint64(2),
-			},
-		},
 	},
 	{
 		name: "FloatEqual",
@@ -180,13 +144,6 @@ var compareTestCases = []struct {
 		name: "FloatNotEqual",
 		v1:   float64(1),
 		v2:   float64(2),
-		expected: Result{
-			Difference{
-				Message: msgFloatNotEqual,
-				V1:      float64(1),
-				V2:      float64(2),
-			},
-		},
 	},
 	{
 		name: "ComplexEqual",
@@ -197,13 +154,6 @@ var compareTestCases = []struct {
 		name: "ComplexNotEqual",
 		v1:   complex(1, 1),
 		v2:   complex(2, 2),
-		expected: Result{
-			Difference{
-				Message: msgComplexNotEqual,
-				V1:      complex(1, 1),
-				V2:      complex(2, 2),
-			},
-		},
 	},
 	{
 		name: "StringEqual",
@@ -214,13 +164,6 @@ var compareTestCases = []struct {
 		name: "StringNotEqual",
 		v1:   "a",
 		v2:   "b",
-		expected: Result{
-			Difference{
-				Message: msgStringNotEqual,
-				V1:      "a",
-				V2:      "b",
-			},
-		},
 	},
 	{
 		name: "ArrayEqual",
@@ -231,18 +174,6 @@ var compareTestCases = []struct {
 		name: "ArrayNotEqual",
 		v1:   [3]int{1, 2, 3},
 		v2:   [3]int{1, 0, 3},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Index: toPtr(1),
-					},
-				},
-				Message: msgIntNotEqual,
-				V1:      int64(2),
-				V2:      int64(0),
-			},
-		},
 	},
 	{
 		name: "SliceEqual",
@@ -273,42 +204,16 @@ var compareTestCases = []struct {
 		name: "SliceNotEqual",
 		v1:   []int{1, 2, 3},
 		v2:   []int{1, 0, 3},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Index: toPtr(1),
-					},
-				},
-				Message: msgIntNotEqual,
-				V1:      int64(2),
-				V2:      int64(0),
-			},
-		},
 	},
 	{
 		name: "SliceNotEqualOnlyOneIsNil",
 		v1:   []int{1, 2, 3},
 		v2:   []int(nil),
-		expected: Result{
-			Difference{
-				Message: msgOnlyOneIsNil,
-				V1:      false,
-				V2:      true,
-			},
-		},
 	},
 	{
 		name: "SliceNotEqualLength",
 		v1:   []int{1, 2},
 		v2:   []int{1, 2, 3},
-		expected: Result{
-			Difference{
-				Message: msgLengthNotEqual,
-				V1:      2,
-				V2:      3,
-			},
-		},
 	},
 	{
 		name: "SliceByteNotEqual",
@@ -318,18 +223,6 @@ var compareTestCases = []struct {
 			s[0] = 1
 			return s
 		}(),
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Index: toPtr(0),
-					},
-				},
-				Message: msgUintNotEqual,
-				V1:      uint64(0),
-				V2:      uint64(1),
-			},
-		},
 	},
 	{
 		name: "SliceNotEqualMaxDifferences",
@@ -347,22 +240,6 @@ var compareTestCases = []struct {
 			}
 			return s
 		}(),
-		expected: func() Result {
-			r := make(Result, DefaultComparator.SliceMaxDifferences)
-			for i := range r {
-				r[i] = Difference{
-					Path: Path{
-						{
-							Index: toPtr(i),
-						},
-					},
-					Message: msgIntNotEqual,
-					V1:      int64(i),
-					V2:      int64(i + 1),
-				}
-			}
-			return r
-		}(),
 	},
 	{
 		name: "InterfaceEqual",
@@ -378,18 +255,6 @@ var compareTestCases = []struct {
 		name: "InterfaceNotEqualOnlyOneIsNil",
 		v1:   [1]any{1},
 		v2:   [1]any{nil},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Index: toPtr(0),
-					},
-				},
-				Message: msgOnlyOneIsNil,
-				V1:      false,
-				V2:      true,
-			},
-		},
 	},
 	{
 		name: "PointerEqual",
@@ -417,13 +282,6 @@ var compareTestCases = []struct {
 			i := 2
 			return &i
 		}(),
-		expected: Result{
-			Difference{
-				Message: msgIntNotEqual,
-				V1:      int64(1),
-				V2:      int64(2),
-			},
-		},
 	},
 	{
 		name: "StructEqual",
@@ -446,18 +304,6 @@ var compareTestCases = []struct {
 			Exported:   2,
 			unexported: 2,
 		},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Struct: toPtr("Exported"),
-					},
-				},
-				Message: msgIntNotEqual,
-				V1:      int64(1),
-				V2:      int64(2),
-			},
-		},
 	},
 	{
 		name: "StructEqualNotEqualUnexported",
@@ -468,18 +314,6 @@ var compareTestCases = []struct {
 		v2: &testStruct{
 			Exported:   1,
 			unexported: 2,
-		},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Struct: toPtr("unexported"),
-					},
-				},
-				Message: msgIntNotEqual,
-				V1:      int64(1),
-				V2:      int64(2),
-			},
 		},
 	},
 	{
@@ -516,18 +350,6 @@ var compareTestCases = []struct {
 		v2: map[string]int{
 			"i": 2,
 		},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Map: toPtr("i"),
-					},
-				},
-				Message: msgIntNotEqual,
-				V1:      int64(1),
-				V2:      int64(2),
-			},
-		},
 	},
 	{
 		name: "MapNotEqualKey",
@@ -537,41 +359,11 @@ var compareTestCases = []struct {
 		v2: map[string]int{
 			"b": 1,
 		},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Map: toPtr("a"),
-					},
-				},
-				Message: msgMapKeyNotDefined,
-				V1:      true,
-				V2:      false,
-			},
-			Difference{
-				Path: Path{
-					{
-						Map: toPtr("b"),
-					},
-				},
-				Message: msgMapKeyNotDefined,
-				V1:      false,
-				V2:      true,
-			},
-		},
 	},
 	{
 		name: "MapNotEqualOnlyOneIsNil",
 		v1: map[string]int{
 			"i": 1,
-		},
-		v2: map[string]int(nil),
-		expected: Result{
-			Difference{
-				Message: msgOnlyOneIsNil,
-				V1:      false,
-				V2:      true,
-			},
 		},
 	},
 	{
@@ -582,13 +374,6 @@ var compareTestCases = []struct {
 		v2: map[string]int{
 			"i": 1,
 			"j": 1,
-		},
-		expected: Result{
-			Difference{
-				Message: msgLengthNotEqual,
-				V1:      1,
-				V2:      2,
-			},
 		},
 	},
 	{
@@ -607,39 +392,11 @@ var compareTestCases = []struct {
 			}
 			return m
 		}(),
-		expected: func() Result {
-			r := make(Result, DefaultComparator.SliceMaxDifferences)
-			for i := range r {
-				r[i] = Difference{
-					Path: Path{
-						{
-							Map: toPtr(strconv.Itoa(i)),
-						},
-					},
-					Message: msgIntNotEqual,
-					V1:      int64(i),
-					V2:      int64(i + 1),
-				}
-			}
-			return r
-		}(),
 	},
 	{
 		name: "UnsafePointerEqual",
 		v1:   unsafe.Pointer(&testInt), //nolint:gosec // Ignore for testing.
 		v2:   unsafe.Pointer(&testInt), //nolint:gosec // Ignore for testing.
-	},
-	{
-		name: "UnsafePointerNotEqual",
-		v1:   unsafe.Pointer(&testInt),   //nolint:gosec // Ignore for testing.
-		v2:   unsafe.Pointer(&testSlice), //nolint:gosec // Ignore for testing.
-		expected: Result{
-			Difference{
-				Message: msgUnsafePointerNotEqual,
-				V1:      uintptr(unsafe.Pointer(&testInt)),   //nolint:gosec // Ignore for testing.
-				V2:      uintptr(unsafe.Pointer(&testSlice)), //nolint:gosec // Ignore for testing.
-			},
-		},
 	},
 	{
 		name: "ChanEqual",
@@ -660,25 +417,11 @@ var compareTestCases = []struct {
 		name: "ChanNotEqualOnlyOneIsNil",
 		v1:   make(chan int),
 		v2:   chan int(nil),
-		expected: Result{
-			Difference{
-				Message: msgOnlyOneIsNil,
-				V1:      false,
-				V2:      true,
-			},
-		},
 	},
 	{
 		name: "ChanNotEqualCapacity",
 		v1:   make(chan int, 1),
 		v2:   make(chan int, 2),
-		expected: Result{
-			Difference{
-				Message: msgCapacityNotEqual,
-				V1:      1,
-				V2:      2,
-			},
-		},
 	},
 	{
 		name: "ChanNotEqualLength",
@@ -688,13 +431,6 @@ var compareTestCases = []struct {
 			chn <- 1
 			return chn
 		}(),
-		expected: Result{
-			Difference{
-				Message: msgLengthNotEqual,
-				V1:      0,
-				V2:      1,
-			},
-		},
 	},
 	{
 		name: "FuncEqual",
@@ -710,18 +446,6 @@ var compareTestCases = []struct {
 		name: "FuncNotEqual",
 		v1:   [1]func(){},
 		v2:   [1]func(){testFunc},
-		expected: Result{
-			Difference{
-				Path: Path{
-					{
-						Index: toPtr(0),
-					},
-				},
-				Message: msgFuncPointerNotEqual,
-				V1:      uintptr(0),
-				V2:      reflect.ValueOf(testFunc).Pointer(),
-			},
-		},
 	},
 	{
 		name: "TimeEqual",
@@ -743,13 +467,6 @@ var compareTestCases = []struct {
 		name: "TimeNotEqual",
 		v1:   time.Unix(1136239445, 0),
 		v2:   time.Unix(1136239446, 0),
-		expected: Result{
-			Difference{
-				Message: msgMethodEqualFalse,
-				V1:      time.Unix(1136239445, 0),
-				V2:      time.Unix(1136239446, 0),
-			},
-		},
 	},
 	{
 		name: "NetIPEqual",
@@ -760,13 +477,6 @@ var compareTestCases = []struct {
 		name: "NetIPNotEqualEqual",
 		v1:   net.ParseIP("111.111.111.111"),
 		v2:   net.ParseIP("222.222.222.222"),
-		expected: Result{
-			Difference{
-				Message: msgMethodEqualFalse,
-				V1:      net.ParseIP("111.111.111.111"),
-				V2:      net.ParseIP("222.222.222.222"),
-			},
-		},
 	},
 	{
 		name: "MatBigIntEqual",
@@ -777,13 +487,6 @@ var compareTestCases = []struct {
 		name: "MatBigIntNotEqual",
 		v1:   big.NewInt(1),
 		v2:   big.NewInt(2),
-		expected: Result{
-			Difference{
-				Message: fmt.Sprintf(msgMethodCmpNotEqual, -1),
-				V1:      big.NewInt(1),
-				V2:      big.NewInt(2),
-			},
-		},
 	},
 	{
 		name: "MathBigRatEqual",
@@ -794,13 +497,6 @@ var compareTestCases = []struct {
 		name: "MathBigIntNotEqual",
 		v1:   big.NewRat(1, 1),
 		v2:   big.NewRat(2, 1),
-		expected: Result{
-			Difference{
-				Message: fmt.Sprintf(msgMethodCmpNotEqual, -1),
-				V1:      big.NewRat(1, 1),
-				V2:      big.NewRat(2, 1),
-			},
-		},
 	},
 	{
 		name: "MathBigFloatEqual",
@@ -811,13 +507,6 @@ var compareTestCases = []struct {
 		name: "MathBigFloatNotEqual",
 		v1:   big.NewFloat(12.34),
 		v2:   big.NewFloat(56.78),
-		expected: Result{
-			Difference{
-				Message: fmt.Sprintf(msgMethodCmpNotEqual, -1),
-				V1:      big.NewFloat(12.34),
-				V2:      big.NewFloat(56.78),
-			},
-		},
 	},
 	{
 		name: "ReflectValueEqual",
@@ -828,13 +517,6 @@ var compareTestCases = []struct {
 		name: "ReflectValueNotEqual",
 		v1:   reflect.ValueOf(1),
 		v2:   reflect.ValueOf(2),
-		expected: Result{
-			Difference{
-				Message: msgIntNotEqual,
-				V1:      int64(1),
-				V2:      int64(2),
-			},
-		},
 	},
 }
 
@@ -842,7 +524,7 @@ func TestCompare(t *testing.T) {
 	for _, tc := range compareTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 			r := Compare(tc.v1, tc.v2)
-			assert.DeepEqual(t, r, tc.expected)
+			assertauto.DeepEqual(t, r)
 		})
 	}
 }
@@ -855,6 +537,16 @@ func BenchmarkCompare(b *testing.B) {
 			}
 		})
 	}
+}
+
+func TestCompareUnsafePointerNotEqual(t *testing.T) {
+	v1 := unsafe.Pointer(&testInt)   //nolint:gosec // Ignore for testing.
+	v2 := unsafe.Pointer(&testSlice) //nolint:gosec // Ignore for testing.
+	r := Compare(v1, v2)
+	assert.SliceLen(t, r, 1)
+	d := r[0]
+	assert.Equal(t, d.Message, msgUnsafePointerNotEqual)
+	assert.NotEqual(t, d.V1, d.V2)
 }
 
 var (
@@ -873,8 +565,8 @@ type testStruct struct {
 var testResult = Result{
 	Difference{
 		Message: "test1",
-		V1:      1,
-		V2:      2,
+		V1:      "1",
+		V2:      "2",
 	},
 	Difference{
 		Message: "test2",
@@ -885,8 +577,7 @@ var testResult = Result{
 
 func TestResultFormat(t *testing.T) {
 	s := fmt.Sprintf("%+v", testResult)
-	expected := ".: test1\n\tv1=1\n\tv2=2\n.: test2\n\tv1=\"a\"\n\tv2=\"b\""
-	assert.Equal(t, s, expected)
+	assertauto.Equal(t, s)
 }
 
 func BenchmarkResultFormat(b *testing.B) {
@@ -901,33 +592,28 @@ func BenchmarkResultFormat(b *testing.B) {
 func TestResultFormatEmpty(t *testing.T) {
 	var r Result
 	s := fmt.Sprintf("%+v", r)
-	expected := "<none>"
-	assert.Equal(t, s, expected)
+	assertauto.Equal(t, s)
 }
 
 func TestResultFormatUnsupportedVerb(t *testing.T) {
 	var r Result
 	s := fmt.Sprintf("%s", r)
-	expected := "%!s(compare.Result)"
-	assert.Equal(t, s, expected)
+	assertauto.Equal(t, s)
 }
 
 func TestDifferenceFormatUnsupportedVerb(t *testing.T) {
 	var d Difference
 	s := fmt.Sprintf("%s", d)
-	expected := "%!s(compare.Difference)"
-	assert.Equal(t, s, expected)
+	assertauto.Equal(t, s)
 }
 
 func TestPathString(t *testing.T) {
 	for _, tc := range []struct {
-		name     string
-		path     Path
-		expected string
+		name string
+		path Path
 	}{
 		{
-			name:     "Empty",
-			expected: ".",
+			name: "Empty",
 		},
 		{
 			name: "Struct",
@@ -936,7 +622,6 @@ func TestPathString(t *testing.T) {
 					Struct: toPtr("test"),
 				},
 			},
-			expected: ".test",
 		},
 		{
 			name: "Map",
@@ -945,7 +630,6 @@ func TestPathString(t *testing.T) {
 					Map: toPtr("test"),
 				},
 			},
-			expected: "[test]",
 		},
 		{
 			name: "Index",
@@ -954,7 +638,6 @@ func TestPathString(t *testing.T) {
 					Index: toPtr(1),
 				},
 			},
-			expected: "[1]",
 		},
 		{
 			name: "All",
@@ -969,12 +652,11 @@ func TestPathString(t *testing.T) {
 					Struct: toPtr("test"),
 				},
 			},
-			expected: ".test[test][1]",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s := tc.path.String()
-			assert.Equal(t, s, tc.expected)
+			assertauto.DeepEqual(t, s)
 		})
 	}
 }

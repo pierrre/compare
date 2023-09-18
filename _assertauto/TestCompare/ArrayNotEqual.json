@@ -1,0 +1,18 @@
+{
+	"entries": [
+		{
+			"deep_equal": [
+				{
+					"path": [
+						{
+							"index": 1
+						}
+					],
+					"message": "int not equal",
+					"v1": "2",
+					"v2": "0"
+				}
+			]
+		}
+	]
+}
