@@ -1,0 +1,13 @@
+{
+	"entries": [
+		{
+			"deep_equal": [
+				{
+					"message": "string not equal",
+					"v1": "\"a\"",
+					"v2": "\"b\""
+				}
+			]
+		}
+	]
+}

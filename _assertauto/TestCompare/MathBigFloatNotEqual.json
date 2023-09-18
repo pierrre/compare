@@ -1,0 +1,11 @@
+{
+	"entries": [
+		{
+			"deep_equal": [
+				{
+					"message": "method .Cmp() returned -1"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,13 @@
+{
+	"entries": [
+		{
+			"deep_equal": [
+				{
+					"message": "type not equal",
+					"v1": "int32",
+					"v2": "int64"
+				}
+			]
+		}
+	]
+}

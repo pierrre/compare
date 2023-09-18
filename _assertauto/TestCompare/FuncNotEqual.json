@@ -1,0 +1,18 @@
+{
+	"entries": [
+		{
+			"deep_equal": [
+				{
+					"path": [
+						{
+							"index": 0
+						}
+					],
+					"message": "only one is nil",
+					"v1": "true",
+					"v2": "false"
+				}
+			]
+		}
+	]
+}

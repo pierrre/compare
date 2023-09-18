@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -88,8 +89,8 @@ func (c *Comparator) compareValid(v1, v2 reflect.Value) (Result, bool) {
 	}
 	return Result{Difference{
 		Message: msgOnlyOneIsValid,
-		V1:      vl1,
-		V2:      vl2,
+		V1:      strconv.FormatBool(vl1),
+		V2:      strconv.FormatBool(vl2),
 	}}, true
 }
 
@@ -101,8 +102,8 @@ func (c *Comparator) compareType(v1, v2 reflect.Value) (Result, bool) {
 	}
 	return Result{Difference{
 		Message: msgTypeNotEqual,
-		V1:      t1,
-		V2:      t2,
+		V1:      t1.String(),
+		V2:      t2.String(),
 	}}, true
 }
 
@@ -151,8 +152,8 @@ func (c *Comparator) compareBool(v1, v2 reflect.Value) Result {
 	}
 	return Result{Difference{
 		Message: msgBoolNotEqual,
-		V1:      b1,
-		V2:      b2,
+		V1:      strconv.FormatBool(b1),
+		V2:      strconv.FormatBool(b2),
 	}}
 }
 
@@ -164,8 +165,8 @@ func (c *Comparator) compareInt(v1, v2 reflect.Value) Result {
 	}
 	return Result{Difference{
 		Message: msgIntNotEqual,
-		V1:      i1,
-		V2:      i2,
+		V1:      strconv.FormatInt(i1, 10),
+		V2:      strconv.FormatInt(i2, 10),
 	}}
 }
 
@@ -177,8 +178,8 @@ func (c *Comparator) compareUint(v1, v2 reflect.Value) Result {
 	}
 	return Result{Difference{
 		Message: msgUintNotEqual,
-		V1:      u1,
-		V2:      u2,
+		V1:      strconv.FormatUint(u1, 10),
+		V2:      strconv.FormatUint(u2, 10),
 	}}
 }
 
@@ -188,10 +189,11 @@ func (c *Comparator) compareFloat(v1, v2 reflect.Value) Result {
 	if f1 == f2 {
 		return nil
 	}
+	bitSize := v1.Type().Bits()
 	return Result{Difference{
 		Message: msgFloatNotEqual,
-		V1:      f1,
-		V2:      f2,
+		V1:      strconv.FormatFloat(f1, 'g', -1, bitSize),
+		V2:      strconv.FormatFloat(f2, 'g', -1, bitSize),
 	}}
 }
 
@@ -201,10 +203,11 @@ func (c *Comparator) compareComplex(v1, v2 reflect.Value) Result {
 	if c1 == c2 {
 		return nil
 	}
+	bitSize := v1.Type().Bits()
 	return Result{Difference{
 		Message: msgComplexNotEqual,
-		V1:      c1,
-		V2:      c2,
+		V1:      strconv.FormatComplex(c1, 'g', -1, bitSize),
+		V2:      strconv.FormatComplex(c2, 'g', -1, bitSize),
 	}}
 }
 
@@ -216,8 +219,8 @@ func (c *Comparator) compareString(v1, v2 reflect.Value) Result {
 	}
 	return Result{Difference{
 		Message: msgStringNotEqual,
-		V1:      s1,
-		V2:      s2,
+		V1:      strconv.Quote(s1),
+		V2:      strconv.Quote(s2),
 	}}
 }
 
@@ -384,8 +387,8 @@ func (c *Comparator) compareMapKey(v1, v2, k reflect.Value) Result {
 				Map: toPtr(fmt.Sprint(k)),
 			}},
 			Message: msgMapKeyNotDefined,
-			V1:      vl1,
-			V2:      vl2,
+			V1:      strconv.FormatBool(vl1),
+			V2:      strconv.FormatBool(vl2),
 		}}
 	}
 	r := c.compare(v1, v2)
@@ -403,15 +406,15 @@ func (c *Comparator) compareMapKey(v1, v2, k reflect.Value) Result {
 }
 
 func (c *Comparator) compareUnsafePointer(v1, v2 reflect.Value) Result {
-	p1 := v1.Pointer()
-	p2 := v2.Pointer()
+	p1 := uintptr(v1.UnsafePointer())
+	p2 := uintptr(v2.UnsafePointer())
 	if p1 == p2 {
 		return nil
 	}
 	return Result{Difference{
 		Message: msgUnsafePointerNotEqual,
-		V1:      p1,
-		V2:      p2,
+		V1:      "0x" + strconv.FormatUint(uint64(p1), 16),
+		V2:      "0x" + strconv.FormatUint(uint64(p2), 16),
 	}}
 }
 
@@ -427,8 +430,8 @@ func (c *Comparator) compareChan(v1, v2 reflect.Value) Result {
 	if cap1 != cap2 {
 		return Result{Difference{
 			Message: msgCapacityNotEqual,
-			V1:      cap1,
-			V2:      cap2,
+			V1:      strconv.Itoa(cap1),
+			V2:      strconv.Itoa(cap2),
 		}}
 	}
 	len1 := v1.Len()
@@ -436,23 +439,26 @@ func (c *Comparator) compareChan(v1, v2 reflect.Value) Result {
 	if len1 != len2 {
 		return Result{Difference{
 			Message: msgLengthNotEqual,
-			V1:      len1,
-			V2:      len2,
+			V1:      strconv.Itoa(len1),
+			V2:      strconv.Itoa(len2),
 		}}
 	}
 	return nil
 }
 
 func (c *Comparator) compareFunc(v1, v2 reflect.Value) Result {
-	p1 := v1.Pointer()
-	p2 := v2.Pointer()
+	if r, stop := c.compareNil(v1, v2); stop {
+		return r
+	}
+	p1 := uintptr(v1.UnsafePointer())
+	p2 := uintptr(v2.UnsafePointer())
 	if p1 == p2 {
 		return nil
 	}
 	return Result{Difference{
 		Message: msgFuncPointerNotEqual,
-		V1:      p1,
-		V2:      p2,
+		V1:      runtime.FuncForPC(p1).Name(),
+		V2:      runtime.FuncForPC(p2).Name(),
 	}}
 }
 
@@ -465,8 +471,8 @@ func (c *Comparator) compareNil(v1, v2 reflect.Value) (Result, bool) {
 	if nil1 != nil2 {
 		return Result{Difference{
 			Message: msgOnlyOneIsNil,
-			V1:      nil1,
-			V2:      nil2,
+			V1:      strconv.FormatBool(nil1),
+			V2:      strconv.FormatBool(nil2),
 		}}, true
 	}
 	return nil, false
@@ -481,8 +487,8 @@ func (c *Comparator) compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
 	if len1 != len2 {
 		return Result{Difference{
 			Message: msgLengthNotEqual,
-			V1:      len1,
-			V2:      len2,
+			V1:      strconv.Itoa(len1),
+			V2:      strconv.Itoa(len2),
 		}}, true
 	}
 	if len1 == 0 {
@@ -572,8 +578,6 @@ func compareMethodEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
 	}
 	return Result{Difference{
 		Message: msgMethodEqualFalse,
-		V1:      v1.Interface(),
-		V2:      v2.Interface(),
 	}}, true
 }
 
@@ -600,8 +604,6 @@ func compareMethodCmp(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
 	}
 	return Result{Difference{
 		Message: fmt.Sprintf(msgMethodCmpNotEqual, cmpRes),
-		V1:      v1.Interface(),
-		V2:      v2.Interface(),
 	}}, true
 }
 
@@ -635,9 +637,10 @@ var (
 
 // Difference represents a difference between 2 values.
 type Difference struct {
-	Path    Path
-	Message string
-	V1, V2  any
+	Path    Path   `json:"path,omitempty"`
+	Message string `json:"message,omitempty"`
+	V1      string `json:"v1,omitempty"`
+	V2      string `json:"v2,omitempty"`
 }
 
 // Format implements fmt.Formatter.
@@ -649,19 +652,15 @@ func (d Difference) Format(s fmt.State, verb rune) {
 	if verb == 'v' {
 		_, _ = io.WriteString(s, d.Path.String()+": "+d.Message)
 		if s.Flag('+') {
-			_, _ = fmt.Fprintf(s, "\n\tv1="+d.getValueFormat(d.V1)+"\n\tv2="+d.getValueFormat(d.V2), d.V1, d.V2)
+			if d.V1 != "" || d.V2 != "" {
+				_, _ = io.WriteString(s, "\n\tv1=")
+				_, _ = io.WriteString(s, d.V1)
+				_, _ = io.WriteString(s, "\n\tv2=")
+				_, _ = io.WriteString(s, d.V2)
+			}
 		}
 	} else {
 		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, d)
-	}
-}
-
-func (d Difference) getValueFormat(v any) string {
-	switch v.(type) {
-	case string:
-		return "%q"
-	default:
-		return "%v"
 	}
 }
 
@@ -704,9 +703,9 @@ func (p Path) String() string {
 
 // PathElem is a single element in a Path.
 type PathElem struct {
-	Struct *string
-	Map    *string
-	Index  *int
+	Struct *string `json:"struct,omitempty"`
+	Map    *string `json:"map,omitempty"`
+	Index  *int    `json:"index,omitempty"`
 }
 
 func (e PathElem) String() string {
