@@ -607,7 +607,7 @@ func TestDifferenceFormatUnsupportedVerb(t *testing.T) {
 	assertauto.Equal(t, s)
 }
 
-func TestPathString(t *testing.T) {
+func TestPathFormat(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		path Path
@@ -655,7 +655,7 @@ func TestPathString(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			s := tc.path.String()
+			s := fmt.Sprintf("%v", tc.path)
 			assertauto.DeepEqual(t, s)
 		})
 	}
