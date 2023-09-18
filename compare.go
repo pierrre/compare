@@ -10,7 +10,8 @@ import (
 	"runtime"
 	"slices"
 	"strconv"
-	"strings"
+
+	"github.com/pierrre/go-libs/strconvio"
 )
 
 // Compare compares 2 values with DefaultComparator.
@@ -649,18 +650,20 @@ type Difference struct {
 // By default, it show the path and message.
 // The '+' flag shows values V1 and V2.
 func (d Difference) Format(s fmt.State, verb rune) {
-	if verb == 'v' {
-		_, _ = io.WriteString(s, d.Path.String()+": "+d.Message)
-		if s.Flag('+') {
-			if d.V1 != "" || d.V2 != "" {
-				_, _ = io.WriteString(s, "\n\tv1=")
-				_, _ = io.WriteString(s, d.V1)
-				_, _ = io.WriteString(s, "\n\tv2=")
-				_, _ = io.WriteString(s, d.V2)
-			}
-		}
-	} else {
+	if verb != 'v' {
 		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, d)
+		return
+	}
+	d.Path.Format(s, verb)
+	_, _ = io.WriteString(s, ": ")
+	_, _ = io.WriteString(s, d.Message)
+	if s.Flag('+') {
+		if d.V1 != "" || d.V2 != "" {
+			_, _ = io.WriteString(s, "\n\tv1=")
+			_, _ = io.WriteString(s, d.V1)
+			_, _ = io.WriteString(s, "\n\tv2=")
+			_, _ = io.WriteString(s, d.V2)
+		}
 	}
 }
 
@@ -689,16 +692,17 @@ const (
 // It helps to prepend elements to the path efficiently.
 type Path []PathElem
 
-// String returns the string value for a Path.
-func (p Path) String() string {
+// Format implements fmt.Formatter.
+//
+// It only supports the 'v' verb.
+func (p Path) Format(s fmt.State, verb rune) {
 	if len(p) == 0 {
-		return "."
+		_, _ = io.WriteString(s, ".")
+		return
 	}
-	ss := make([]string, len(p))
-	for i, e := range p {
-		ss[len(ss)-i-1] = e.String()
+	for i := len(p) - 1; i >= 0; i-- {
+		p[i].Format(s, verb)
 	}
-	return strings.Join(ss, "")
 }
 
 // PathElem is a single element in a Path.
@@ -708,17 +712,23 @@ type PathElem struct {
 	Index  *int    `json:"index,omitempty"`
 }
 
-func (e PathElem) String() string {
-	if e.Struct != nil {
-		return "." + *e.Struct
+// Format implements fmt.Formatter.
+//
+// It only supports the 'v' verb.
+func (e PathElem) Format(s fmt.State, verb rune) {
+	switch {
+	case e.Struct != nil:
+		_, _ = io.WriteString(s, ".")
+		_, _ = io.WriteString(s, *e.Struct)
+	case e.Map != nil:
+		_, _ = io.WriteString(s, "[")
+		_, _ = io.WriteString(s, *e.Map)
+		_, _ = io.WriteString(s, "]")
+	case e.Index != nil:
+		_, _ = io.WriteString(s, "[")
+		_, _ = strconvio.WriteInt(s, int64(*e.Index), 10)
+		_, _ = io.WriteString(s, "]")
 	}
-	if e.Map != nil {
-		return "[" + *e.Map + "]"
-	}
-	if e.Index != nil {
-		return "[" + strconv.Itoa(*e.Index) + "]"
-	}
-	return ""
 }
 
 func toPtr[V any](v V) *V {
