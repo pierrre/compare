@@ -1,8 +1,8 @@
 package compare
 
 import (
-	"bytes"
 	"fmt"
+	"io"
 	"math/big"
 	"net"
 	"reflect"
@@ -591,12 +591,17 @@ func TestResultFormat(t *testing.T) {
 	assertauto.Equal(t, s)
 }
 
+func TestResultFormatAllocs(t *testing.T) {
+	var it any = testResult
+	assert.AllocsPerRun(t, 100, func() {
+		fmt.Fprintf(io.Discard, "%+v", it)
+	}, 0)
+}
+
 func BenchmarkResultFormat(b *testing.B) {
 	var it any = testResult
-	buf := new(bytes.Buffer)
 	for i := 0; i < b.N; i++ {
-		buf.Reset()
-		_, _ = fmt.Fprintf(buf, "%+v", it)
+		_, _ = fmt.Fprintf(io.Discard, "%+v", it)
 	}
 }
 
@@ -618,56 +623,80 @@ func TestDifferenceFormatUnsupportedVerb(t *testing.T) {
 	assertauto.Equal(t, s)
 }
 
+var pathTestCases = []struct {
+	name string
+	path Path
+}{
+	{
+		name: "Empty",
+	},
+	{
+		name: "Struct",
+		path: Path{
+			{
+				Struct: toPtr("test"),
+			},
+		},
+	},
+	{
+		name: "Map",
+		path: Path{
+			{
+				Map: toPtr("test"),
+			},
+		},
+	},
+	{
+		name: "Index",
+		path: Path{
+			{
+				Index: toPtr(1),
+			},
+		},
+	},
+	{
+		name: "All",
+		path: Path{
+			{
+				Index: toPtr(1),
+			},
+			{
+				Map: toPtr("test"),
+			},
+			{
+				Struct: toPtr("test"),
+			},
+		},
+	},
+}
+
 func TestPathFormat(t *testing.T) {
-	for _, tc := range []struct {
-		name string
-		path Path
-	}{
-		{
-			name: "Empty",
-		},
-		{
-			name: "Struct",
-			path: Path{
-				{
-					Struct: toPtr("test"),
-				},
-			},
-		},
-		{
-			name: "Map",
-			path: Path{
-				{
-					Map: toPtr("test"),
-				},
-			},
-		},
-		{
-			name: "Index",
-			path: Path{
-				{
-					Index: toPtr(1),
-				},
-			},
-		},
-		{
-			name: "All",
-			path: Path{
-				{
-					Index: toPtr(1),
-				},
-				{
-					Map: toPtr("test"),
-				},
-				{
-					Struct: toPtr("test"),
-				},
-			},
-		},
-	} {
+	for _, tc := range pathTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := fmt.Sprintf("%v", tc.path)
 			assertauto.DeepEqual(t, s)
+		})
+	}
+}
+
+func TestPathFormatAllocs(t *testing.T) {
+	for _, tc := range pathTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var it any = tc.path
+			assert.AllocsPerRun(t, 100, func() {
+				fmt.Fprintf(io.Discard, "%v", it)
+			}, 0)
+		})
+	}
+}
+
+func BenchmarkPathFormat(b *testing.B) {
+	for _, tc := range pathTestCases {
+		b.Run(tc.name, func(b *testing.B) {
+			var it any = tc.path
+			for i := 0; i < b.N; i++ {
+				_, _ = fmt.Fprintf(io.Discard, "%v", it)
+			}
 		})
 	}
 }
