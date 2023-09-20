@@ -217,9 +217,9 @@ var compareTestCases = []struct {
 	},
 	{
 		name: "SliceByteNotEqual",
-		v1:   make([]byte, 1<<20),
+		v1:   make([]byte, 10),
 		v2: func() []byte {
-			s := make([]byte, 1<<20)
+			s := make([]byte, 10)
 			s[0] = 1
 			return s
 		}(),
@@ -525,6 +525,17 @@ func TestCompare(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			r := Compare(tc.v1, tc.v2)
 			assertauto.DeepEqual(t, r)
+		})
+	}
+}
+
+func TestCompareAllocs(t *testing.T) {
+	for _, tc := range compareTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			allocs := testing.AllocsPerRun(100, func() {
+				Compare(tc.v1, tc.v2)
+			})
+			assertauto.Equal(t, allocs)
 		})
 	}
 }
