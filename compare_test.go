@@ -306,7 +306,7 @@ var compareTestCases = []struct {
 		},
 	},
 	{
-		name: "StructEqualNotEqualUnexported",
+		name: "StructNotEqualUnexported",
 		v1: &testStruct{
 			Exported:   1,
 			unexported: 1,
