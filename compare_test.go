@@ -365,6 +365,7 @@ var compareTestCases = []struct {
 		v1: map[string]int{
 			"i": 1,
 		},
+		v2: map[string]int(nil),
 	},
 	{
 		name: "MapNotEqualLength",

@@ -3,9 +3,9 @@
 		{
 			"deep_equal": [
 				{
-					"message": "only one is valid",
-					"v1": "true",
-					"v2": "false"
+					"message": "only one is nil",
+					"v1": "false",
+					"v2": "true"
 				}
 			]
 		}
