@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"slices"
 	"strconv"
+	"sync"
 
 	"github.com/pierrre/go-libs/strconvio"
 )
@@ -562,18 +563,14 @@ func NewMethodEqualFunc() Func {
 }
 
 func compareMethodEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+	f, ok := getMethodEqualFunc(v1.Type())
+	if !ok {
+		return nil, false
+	}
 	if !v1.CanInterface() || !v2.CanInterface() {
 		return nil, false
 	}
-	met := v1.MethodByName("Equal")
-	if !met.IsValid() {
-		return nil, false
-	}
-	metTyp := met.Type()
-	if metTyp.NumIn() != 1 || metTyp.In(0) != v2.Type() || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(true) {
-		return nil, false
-	}
-	eqRes := met.Call([]reflect.Value{v2})[0].Interface().(bool) //nolint:forcetypeassert // The type of the returned value is already checked above.
+	eqRes := f.Call([]reflect.Value{v1, v2})[0].Interface().(bool) //nolint:forcetypeassert // The type of the returned value is already checked.
 	if eqRes {
 		return nil, true
 	}
@@ -582,30 +579,82 @@ func compareMethodEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
 	}}, true
 }
 
+var (
+	equalMethodFuncsLock sync.Mutex
+	equalMethodFuncs     = make(map[reflect.Type]*reflect.Value)
+)
+
+func getMethodEqualFunc(typ reflect.Type) (reflect.Value, bool) {
+	equalMethodFuncsLock.Lock()
+	defer equalMethodFuncsLock.Unlock()
+	fp, ok := equalMethodFuncs[typ]
+	if ok {
+		if fp != nil {
+			return *fp, true
+		}
+		return reflect.Value{}, false
+	}
+	equalMethodFuncs[typ] = nil
+	met, ok := typ.MethodByName("Equal")
+	if !ok {
+		return reflect.Value{}, false
+	}
+	metTyp := met.Type
+	if metTyp.NumIn() != 2 || metTyp.In(0) != typ || metTyp.In(1) != typ || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(true) {
+		return reflect.Value{}, false
+	}
+	equalMethodFuncs[typ] = &met.Func
+	return met.Func, true
+}
+
 // NewMethodCmpFunc returns a Func that compares with the method .Cmp().
 func NewMethodCmpFunc() Func {
 	return compareMethodCmp
 }
 
 func compareMethodCmp(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+	f, ok := getMethodCmpFunc(v1.Type())
+	if !ok {
+		return nil, false
+	}
 	if !v1.CanInterface() || !v2.CanInterface() {
 		return nil, false
 	}
-	met := v1.MethodByName("Cmp")
-	if !met.IsValid() {
-		return nil, false
-	}
-	metTyp := met.Type()
-	if metTyp.NumIn() != 1 || metTyp.In(0) != v2.Type() || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(int(1)) {
-		return nil, false
-	}
-	cmpRes := met.Call([]reflect.Value{v2})[0].Interface().(int) //nolint:forcetypeassert // The type of the returned value is already checked above.
+	cmpRes := f.Call([]reflect.Value{v1, v2})[0].Interface().(int) //nolint:forcetypeassert // The type of the returned value is already checked.
 	if cmpRes == 0 {
 		return nil, true
 	}
 	return Result{Difference{
 		Message: fmt.Sprintf(msgMethodCmpNotEqual, cmpRes),
 	}}, true
+}
+
+var (
+	cmdMethodFuncsLock sync.Mutex
+	cmdMethodFuncs     = make(map[reflect.Type]*reflect.Value)
+)
+
+func getMethodCmpFunc(typ reflect.Type) (reflect.Value, bool) {
+	cmdMethodFuncsLock.Lock()
+	defer cmdMethodFuncsLock.Unlock()
+	fp, ok := cmdMethodFuncs[typ]
+	if ok {
+		if fp != nil {
+			return *fp, true
+		}
+		return reflect.Value{}, false
+	}
+	cmdMethodFuncs[typ] = nil
+	met, ok := typ.MethodByName("Cmp")
+	if !ok {
+		return reflect.Value{}, false
+	}
+	metTyp := met.Type
+	if metTyp.NumIn() != 2 || metTyp.In(0) != typ || metTyp.In(1) != typ || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(int(1)) {
+		return reflect.Value{}, false
+	}
+	cmdMethodFuncs[typ] = &met.Func
+	return met.Func, true
 }
 
 // Result is a list of Difference.
