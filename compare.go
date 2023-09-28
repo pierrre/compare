@@ -61,23 +61,28 @@ func NewComparator() *Comparator {
 
 // Compare compares 2 values.
 func (c *Comparator) Compare(v1, v2 any) Result {
+	stItf := statePool.Get()
+	defer statePool.Put(stItf)
+	st := stItf.(*State) //nolint:forcetypeassert // The pool only contains *State.
+	st.reset()
 	return c.compare(
+		st,
 		reflect.ValueOf(v1),
 		reflect.ValueOf(v2),
 	)
 }
 
-func (c *Comparator) compare(v1, v2 reflect.Value) Result {
+func (c *Comparator) compare(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareValid(v1, v2); stop {
 		return r
 	}
 	if r, stop := c.compareType(v1, v2); stop {
 		return r
 	}
-	if r, stop := c.compareFuncs(v1, v2); stop {
+	if r, stop := c.compareFuncs(st, v1, v2); stop {
 		return r
 	}
-	return c.compareKind(v1, v2)
+	return c.compareKind(st, v1, v2)
 }
 
 func (c *Comparator) compareValid(v1, v2 reflect.Value) (Result, bool) {
@@ -110,7 +115,7 @@ func (c *Comparator) compareType(v1, v2 reflect.Value) (Result, bool) {
 }
 
 //nolint:gocyclo // Large switch/case is OK.
-func (c *Comparator) compareKind(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareKind(st *State, v1, v2 reflect.Value) Result {
 	switch v1.Kind() { //nolint:exhaustive // All kinds are handled, Invalid should not happen.
 	case reflect.Bool:
 		return c.compareBool(v1, v2)
@@ -125,17 +130,17 @@ func (c *Comparator) compareKind(v1, v2 reflect.Value) Result {
 	case reflect.String:
 		return c.compareString(v1, v2)
 	case reflect.Array:
-		return c.compareArray(v1, v2)
+		return c.compareArray(st, v1, v2)
 	case reflect.Slice:
-		return c.compareSlice(v1, v2)
+		return c.compareSlice(st, v1, v2)
 	case reflect.Interface:
-		return c.compareInterface(v1, v2)
+		return c.compareInterface(st, v1, v2)
 	case reflect.Pointer:
-		return c.comparePointer(v1, v2)
+		return c.comparePointer(st, v1, v2)
 	case reflect.Struct:
-		return c.compareStruct(v1, v2)
+		return c.compareStruct(st, v1, v2)
 	case reflect.Map:
-		return c.compareMap(v1, v2)
+		return c.compareMap(st, v1, v2)
 	case reflect.UnsafePointer:
 		return c.compareUnsafePointer(v1, v2)
 	case reflect.Chan:
@@ -226,11 +231,11 @@ func (c *Comparator) compareString(v1, v2 reflect.Value) Result {
 	}}
 }
 
-func (c *Comparator) compareArray(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareArray(st *State, v1, v2 reflect.Value) Result {
 	var r Result
 	diffCount := 0
 	for i, n := 0, v1.Len(); i < n; i++ {
-		ri := c.compareArrayIndex(v1, v2, i)
+		ri := c.compareArrayIndex(st, v1, v2, i)
 		r = append(r, ri...)
 		if len(ri) > 0 {
 			diffCount++
@@ -242,8 +247,8 @@ func (c *Comparator) compareArray(v1, v2 reflect.Value) Result {
 	return r
 }
 
-func (c *Comparator) compareArrayIndex(v1, v2 reflect.Value, i int) Result {
-	r := c.compare(v1.Index(i), v2.Index(i))
+func (c *Comparator) compareArrayIndex(st *State, v1, v2 reflect.Value, i int) Result {
+	r := c.compare(st, v1.Index(i), v2.Index(i))
 	if len(r) == 0 {
 		return nil
 	}
@@ -256,38 +261,38 @@ func (c *Comparator) compareArrayIndex(v1, v2 reflect.Value, i int) Result {
 	return r
 }
 
-func (c *Comparator) compareSlice(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareSlice(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
 	}
-	return c.compareArray(v1, v2)
+	return c.compareArray(st, v1, v2)
 }
 
-func (c *Comparator) compareInterface(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareInterface(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareNil(v1, v2); stop {
 		return r
 	}
-	return c.compare(v1.Elem(), v2.Elem())
+	return c.compare(st, v1.Elem(), v2.Elem())
 }
 
-func (c *Comparator) comparePointer(v1, v2 reflect.Value) Result {
+func (c *Comparator) comparePointer(st *State, v1, v2 reflect.Value) Result {
 	if v1.Pointer() == v2.Pointer() {
 		return nil
 	}
-	return c.compare(v1.Elem(), v2.Elem())
+	return c.compare(st, v1.Elem(), v2.Elem())
 }
 
-func (c *Comparator) compareStruct(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareStruct(st *State, v1, v2 reflect.Value) Result {
 	var r Result
 	t := v1.Type()
 	for i, n := 0, t.NumField(); i < n; i++ {
-		r = append(r, c.compareStructField(v1, v2, i)...)
+		r = append(r, c.compareStructField(st, v1, v2, i)...)
 	}
 	return r
 }
 
-func (c *Comparator) compareStructField(v1, v2 reflect.Value, i int) Result {
-	r := c.compare(v1.Field(i), v2.Field(i))
+func (c *Comparator) compareStructField(st *State, v1, v2 reflect.Value, i int) Result {
+	r := c.compare(st, v1.Field(i), v2.Field(i))
 	if len(r) == 0 {
 		return nil
 	}
@@ -301,14 +306,14 @@ func (c *Comparator) compareStructField(v1, v2 reflect.Value, i int) Result {
 	return r
 }
 
-func (c *Comparator) compareMap(v1, v2 reflect.Value) Result {
+func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
 	}
 	var r Result
 	diffCount := 0
 	for _, k := range getSortedMapsKeys(v1, v2) {
-		ri := c.compareMapKey(v1, v2, k)
+		ri := c.compareMapKey(st, v1, v2, k)
 		r = append(r, ri...)
 		if len(ri) > 0 {
 			diffCount++
@@ -378,7 +383,7 @@ func getMapsKeysSortCmp(typ reflect.Type) func(a, b reflect.Value) int {
 	}
 }
 
-func (c *Comparator) compareMapKey(v1, v2, k reflect.Value) Result {
+func (c *Comparator) compareMapKey(st *State, v1, v2, k reflect.Value) Result {
 	v1 = v1.MapIndex(k)
 	v2 = v2.MapIndex(k)
 	vl1 := v1.IsValid()
@@ -393,7 +398,7 @@ func (c *Comparator) compareMapKey(v1, v2, k reflect.Value) Result {
 			V2:      strconv.FormatBool(vl2),
 		}}
 	}
-	r := c.compare(v1, v2)
+	r := c.compare(st, v1, v2)
 	if len(r) == 0 {
 		return nil
 	}
@@ -502,14 +507,29 @@ func (c *Comparator) compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
 	return nil, false
 }
 
+var statePool = &sync.Pool{
+	New: func() any {
+		return &State{}
+	},
+}
+
+// State represents the state of a comparison.
+//
+// Functions must restore the original state when they return.
+type State struct{}
+
+func (st *State) reset() {
+	// TODO reset fields
+}
+
 // Func represents a comparison function.
 // It is guaranteed that both values are valid and of the same type.
 // If the returned value "stop" is true, the comparison will stop.
-type Func func(c *Comparator, v1, v2 reflect.Value) (r Result, stop bool)
+type Func func(c *Comparator, st *State, v1, v2 reflect.Value) (r Result, stop bool)
 
-func (c *Comparator) compareFuncs(v1, v2 reflect.Value) (Result, bool) {
+func (c *Comparator) compareFuncs(st *State, v1, v2 reflect.Value) (Result, bool) {
 	for _, f := range c.Funcs {
-		if r, stop := f(c, v1, v2); stop {
+		if r, stop := f(c, st, v1, v2); stop {
 			return r, true
 		}
 	}
@@ -523,7 +543,7 @@ func NewBytesEqualFunc() Func {
 	return compareBytesEqual
 }
 
-func compareBytesEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+func compareBytesEqual(c *Comparator, st *State, v1, v2 reflect.Value) (Result, bool) {
 	if v1.Type() != typeByteSlice {
 		return nil, false
 	}
@@ -543,7 +563,7 @@ func NewReflectValueFunc() Func {
 	return compareReflectValue
 }
 
-func compareReflectValue(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+func compareReflectValue(c *Comparator, st *State, v1, v2 reflect.Value) (Result, bool) {
 	if v1.Type() != typeReflectValue {
 		return nil, false
 	}
@@ -554,7 +574,7 @@ func compareReflectValue(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
 	}
 	v1 = v1.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
 	v2 = v2.Interface().(reflect.Value) //nolint:forcetypeassert // The type assertion is already checked above.
-	return c.compare(v1, v2), true
+	return c.compare(st, v1, v2), true
 }
 
 // NewMethodEqualFunc returns a Func that compares with the method .Equal().
@@ -562,7 +582,7 @@ func NewMethodEqualFunc() Func {
 	return compareMethodEqual
 }
 
-func compareMethodEqual(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+func compareMethodEqual(c *Comparator, st *State, v1, v2 reflect.Value) (Result, bool) {
 	f, ok := getMethodEqualFunc(v1.Type())
 	if !ok {
 		return nil, false
@@ -612,7 +632,7 @@ func NewMethodCmpFunc() Func {
 	return compareMethodCmp
 }
 
-func compareMethodCmp(c *Comparator, v1, v2 reflect.Value) (Result, bool) {
+func compareMethodCmp(c *Comparator, st *State, v1, v2 reflect.Value) (Result, bool) {
 	f, ok := getMethodCmpFunc(v1.Type())
 	if !ok {
 		return nil, false
