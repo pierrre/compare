@@ -201,6 +201,19 @@ var compareTestCases = []struct {
 		v2:   make([]byte, 1<<20),
 	},
 	{
+		name: "SliceEqualRecursion",
+		v1: func() []any {
+			v := make([]any, 1)
+			v[0] = v
+			return v
+		}(),
+		v2: func() any {
+			v := make([]any, 1)
+			v[0] = v
+			return v
+		}(),
+	},
+	{
 		name: "SliceNotEqual",
 		v1:   []int{1, 2, 3},
 		v2:   []int{1, 0, 3},
@@ -273,6 +286,19 @@ var compareTestCases = []struct {
 		v2:   &testInt,
 	},
 	{
+		name: "PointerEqualRecursion",
+		v1: func() any {
+			var v any
+			v = &v
+			return v
+		}(),
+		v2: func() any {
+			var v any
+			v = &v
+			return v
+		}(),
+	},
+	{
 		name: "PointerNotEqual",
 		v1: func() *int {
 			i := 1
@@ -341,6 +367,19 @@ var compareTestCases = []struct {
 		name: "MapEqualPointer",
 		v1:   testMap,
 		v2:   testMap,
+	},
+	{
+		name: "MapEqualRecursion",
+		v1: func() map[int]any {
+			v := make(map[int]any)
+			v[0] = v
+			return v
+		}(),
+		v2: func() any {
+			v := make(map[int]any)
+			v[0] = v
+			return v
+		}(),
 	},
 	{
 		name: "MapNotEqualValue",

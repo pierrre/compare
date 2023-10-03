@@ -85,6 +85,22 @@ func (c *Comparator) compare(st *State, v1, v2 reflect.Value) Result {
 	return c.compareKind(st, v1, v2)
 }
 
+func (c *Comparator) checkRecursion(st *State, v1, v2 reflect.Value) bool {
+	vp := Visited{
+		V1: v1.Pointer(),
+		V2: v2.Pointer(),
+	}
+	if slices.Contains(st.Visited, vp) {
+		return true
+	}
+	st.Visited = append(st.Visited, vp)
+	return false
+}
+
+func (c *Comparator) endRecursion(st *State) {
+	st.Visited = st.Visited[:len(st.Visited)-1]
+}
+
 func (c *Comparator) compareValid(v1, v2 reflect.Value) (Result, bool) {
 	vl1 := v1.IsValid()
 	vl2 := v2.IsValid()
@@ -265,6 +281,10 @@ func (c *Comparator) compareSlice(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
 	}
+	if c.checkRecursion(st, v1, v2) {
+		return nil
+	}
+	defer c.endRecursion(st)
 	return c.compareArray(st, v1, v2)
 }
 
@@ -279,6 +299,10 @@ func (c *Comparator) comparePointer(st *State, v1, v2 reflect.Value) Result {
 	if v1.Pointer() == v2.Pointer() {
 		return nil
 	}
+	if c.checkRecursion(st, v1, v2) {
+		return nil
+	}
+	defer c.endRecursion(st)
 	return c.compare(st, v1.Elem(), v2.Elem())
 }
 
@@ -310,6 +334,10 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
 	}
+	if c.checkRecursion(st, v1, v2) {
+		return nil
+	}
+	defer c.endRecursion(st)
 	var r Result
 	diffCount := 0
 	for _, k := range getSortedMapsKeys(v1, v2) {
@@ -516,10 +544,16 @@ var statePool = &sync.Pool{
 // State represents the state of a comparison.
 //
 // Functions must restore the original state when they return.
-type State struct{}
+type State struct {
+	Visited []Visited
+}
 
 func (st *State) reset() {
-	// TODO reset fields
+	st.Visited = st.Visited[:0]
+}
+
+type Visited struct {
+	V1, V2 uintptr
 }
 
 // Func represents a comparison function.
