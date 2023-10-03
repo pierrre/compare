@@ -445,7 +445,7 @@ var compareTestCases = []struct {
 	},
 	{
 		name: "FuncNotEqual",
-		v1:   [1]func(){},
+		v1:   [1]func(){func() {}},
 		v2:   [1]func(){testFunc},
 	},
 	{

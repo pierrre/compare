@@ -8,9 +8,9 @@
 							"index": 0
 						}
 					],
-					"message": "only one is nil",
-					"v1": "true",
-					"v2": "false"
+					"message": "func pointer not equal",
+					"v1": "github.com/pierrre/compare.glob..func12",
+					"v2": "github.com/pierrre/compare.glob..func14"
 				}
 			]
 		}
