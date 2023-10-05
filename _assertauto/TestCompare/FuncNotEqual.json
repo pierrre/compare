@@ -3,14 +3,9 @@
 		{
 			"deep_equal": [
 				{
-					"path": [
-						{
-							"index": 0
-						}
-					],
 					"message": "func pointer not equal",
-					"v1": "github.com/pierrre/compare.glob..func12",
-					"v2": "github.com/pierrre/compare.glob..func14"
+					"v1": "github.com/pierrre/compare.testFunc1",
+					"v2": "github.com/pierrre/compare.testFunc2"
 				}
 			]
 		}

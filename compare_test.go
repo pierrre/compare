@@ -435,18 +435,18 @@ var compareTestCases = []struct {
 	},
 	{
 		name: "FuncEqual",
-		v1:   testFunc,
-		v2:   testFunc,
+		v1:   testFunc1,
+		v2:   testFunc1,
 	},
 	{
 		name: "FuncEqualNil",
-		v1:   [1]func(){},
-		v2:   [1]func(){},
+		v1:   (func())(nil),
+		v2:   (func())(nil),
 	},
 	{
 		name: "FuncNotEqual",
-		v1:   [1]func(){func() {}},
-		v2:   [1]func(){testFunc},
+		v1:   testFunc1,
+		v2:   testFunc2,
 	},
 	{
 		name: "TimeEqual",
@@ -566,8 +566,11 @@ var (
 	testInt   = 1
 	testMap   = map[string]int{"i": 1}
 	testChan  = make(chan int)
-	testFunc  = func() {}
 )
+
+func testFunc1() {}
+
+func testFunc2() {}
 
 type testStruct struct {
 	Exported   int
