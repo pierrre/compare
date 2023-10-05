@@ -406,8 +406,8 @@ var compareTestCases = []struct {
 	},
 	{
 		name: "ChanEqualNil",
-		v1:   [1]chan int{},
-		v2:   [1]chan int{},
+		v1:   chan int(nil),
+		v2:   chan int(nil),
 	},
 	{
 		name: "ChanEqualPointer",
