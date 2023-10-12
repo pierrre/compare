@@ -85,11 +85,22 @@ func ExampleCompare() {
 	// 	v2=4
 }
 
-var compareTestCases = []struct {
-	name string
-	v1   any
-	v2   any
-}{
+type testCase struct {
+	name      string
+	v1        any
+	v2        any
+	configure func(c *Comparator)
+}
+
+func (tc testCase) newComparator() *Comparator {
+	c := NewComparator()
+	if tc.configure != nil {
+		tc.configure(c)
+	}
+	return c
+}
+
+var compareTestCases = []testCase{
 	{
 		name: "EqualNotValid",
 		v1:   nil,
@@ -558,12 +569,33 @@ var compareTestCases = []struct {
 		v1:   reflect.ValueOf(1),
 		v2:   reflect.ValueOf(2),
 	},
+	{
+		name: "MaxDepth",
+		v1: map[string]any{
+			"a": map[string]any{
+				"b": map[string]any{
+					"c": "test1",
+				},
+			},
+		},
+		v2: map[string]any{
+			"a": map[string]any{
+				"b": map[string]any{
+					"c": "test2",
+				},
+			},
+		},
+		configure: func(c *Comparator) {
+			c.MaxDepth = 6
+		},
+	},
 }
 
 func TestCompare(t *testing.T) {
 	for _, tc := range compareTestCases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := Compare(tc.v1, tc.v2)
+			c := tc.newComparator()
+			r := c.Compare(tc.v1, tc.v2)
 			assertauto.DeepEqual(t, r)
 		})
 	}
@@ -572,8 +604,9 @@ func TestCompare(t *testing.T) {
 func TestCompareAllocs(t *testing.T) {
 	for _, tc := range compareTestCases {
 		t.Run(tc.name, func(t *testing.T) {
+			c := tc.newComparator()
 			allocs := testing.AllocsPerRun(100, func() {
-				Compare(tc.v1, tc.v2)
+				c.Compare(tc.v1, tc.v2)
 			})
 			assertauto.Equal(t, allocs)
 		})
@@ -583,8 +616,9 @@ func TestCompareAllocs(t *testing.T) {
 func BenchmarkCompare(b *testing.B) {
 	for _, tc := range compareTestCases {
 		b.Run(tc.name, func(b *testing.B) {
+			c := tc.newComparator()
 			for i := 0; i < b.N; i++ {
-				Compare(tc.v1, tc.v2)
+				c.Compare(tc.v1, tc.v2)
 			}
 		})
 	}

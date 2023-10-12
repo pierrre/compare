@@ -27,19 +27,21 @@ var DefaultComparator = NewComparator()
 //
 // It should be created with NewComparator().
 type Comparator struct {
+	// MaxDepth is the maximum depth of the comparison.
+	// If the value is reached, the comparison is stopped.
+	// Default: 0 (no limit).
+	MaxDepth int
 	// SliceMaxDifferences is the maximum number of different items for a slice.
 	// If the value is reached, the comparison is stopped for the current slice.
 	// It is also used for array.
 	// Set to 0 disables it.
 	// Default: 10.
 	SliceMaxDifferences int
-
 	// MapMaxDifferences is the maximum number of different items for a map.
 	// If the value is reached, the comparison is stopped for the current map.
 	// Set to 0 disables it.
 	// Default: 10.
 	MapMaxDifferences int
-
 	// Funcs is the list of custom comparison functions.
 	// Default: []byte, reflect.Value, .Equal().
 	Funcs []Func
@@ -73,6 +75,13 @@ func (c *Comparator) Compare(v1, v2 any) Result {
 }
 
 func (c *Comparator) compare(st *State, v1, v2 reflect.Value) Result {
+	if c.MaxDepth > 0 && st.Depth >= c.MaxDepth {
+		return nil
+	}
+	st.Depth++
+	defer func() {
+		st.Depth--
+	}()
 	if r, stop := c.compareValid(v1, v2); stop {
 		return r
 	}
@@ -545,10 +554,12 @@ var statePool = &sync.Pool{
 //
 // Functions must restore the original state when they return.
 type State struct {
+	Depth   int
 	Visited []Visited
 }
 
 func (st *State) reset() {
+	st.Depth = 0
 	st.Visited = st.Visited[:0]
 }
 
