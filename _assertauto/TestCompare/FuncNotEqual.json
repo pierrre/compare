@@ -4,8 +4,8 @@
 			"deep_equal": [
 				{
 					"message": "func pointer not equal",
-					"v1": "github.com/pierrre/compare.testFunc1",
-					"v2": "github.com/pierrre/compare.testFunc2"
+					"v1": "github.com/pierrre/compare_test.testFunc1",
+					"v2": "github.com/pierrre/compare_test.testFunc2"
 				}
 			]
 		}

@@ -3,7 +3,6 @@ package compare
 
 import (
 	"bytes"
-	"cmp"
 	"fmt"
 	"io"
 	"reflect"
@@ -12,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/pierrre/compare/internal"
 	"github.com/pierrre/go-libs/strconvio"
 )
 
@@ -364,7 +364,7 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 
 func getSortedMapsKeys(v1, v2 reflect.Value) []reflect.Value {
 	ks := getMapsKeys(v1, v2)
-	sortMapsKeys(v1.Type().Key(), ks)
+	internal.SortMapsKeys(v1.Type().Key(), ks)
 	return ks
 }
 
@@ -376,48 +376,6 @@ func getMapsKeys(v1, v2 reflect.Value) []reflect.Value {
 		}
 	}
 	return ks
-}
-
-func sortMapsKeys(typ reflect.Type, s []reflect.Value) {
-	sortCmp := getMapsKeysSortCmp(typ)
-	slices.SortFunc(s, sortCmp)
-}
-
-func getMapsKeysSortCmp(typ reflect.Type) func(a, b reflect.Value) int {
-	switch typ.Kind() { //nolint:exhaustive // Optimized for common kinds, the default case is less optimized.
-	case reflect.Bool:
-		return func(a, b reflect.Value) int {
-			ab := a.Bool()
-			bb := b.Bool()
-			if ab == bb {
-				return 0
-			}
-			if !ab {
-				return -1
-			}
-			return 1
-		}
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return func(a, b reflect.Value) int {
-			return cmp.Compare(a.Int(), b.Int())
-		}
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return func(a, b reflect.Value) int {
-			return cmp.Compare(a.Uint(), b.Uint())
-		}
-	case reflect.Float32, reflect.Float64:
-		return func(a, b reflect.Value) int {
-			return cmp.Compare(a.Float(), b.Float())
-		}
-	case reflect.String:
-		return func(a, b reflect.Value) int {
-			return cmp.Compare(a.String(), b.String())
-		}
-	default:
-		return func(a, b reflect.Value) int {
-			return cmp.Compare(fmt.Sprint(a), fmt.Sprint(b))
-		}
-	}
 }
 
 func (c *Comparator) compareMapKey(st *State, v1, v2, k reflect.Value) Result {
