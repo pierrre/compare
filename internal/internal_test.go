@@ -1,13 +1,29 @@
 package internal_test
 
 import (
+	"fmt"
 	"net"
 	"reflect"
 	"testing"
 
 	"github.com/pierrre/assert"
+	"github.com/pierrre/assert/ext/pierrrepretty"
+	"github.com/pierrre/compare"
 	. "github.com/pierrre/compare/internal"
 )
+
+func init() {
+	// Prevent import cycle.
+	assert.DeepEqualer = func(v1, v2 any) (diff string, equal bool) {
+		res := compare.Compare(v1, v2)
+		if len(res) == 0 {
+			return "", true
+		}
+		diff = fmt.Sprintf("%+v", res)
+		return diff, false
+	}
+	pierrrepretty.ConfigureDefault()
+}
 
 var sortMapsKeysTestCases = []struct {
 	name     string
