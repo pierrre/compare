@@ -9,5 +9,5 @@ require (
 
 require (
 	github.com/pierrre/errors v0.5.1 // indirect
-	github.com/pierrre/pretty v0.0.9 // indirect
+	github.com/pierrre/pretty v0.0.10 // indirect
 )
