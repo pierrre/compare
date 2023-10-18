@@ -12,24 +12,8 @@ import (
 
 	"github.com/pierrre/assert"
 	"github.com/pierrre/assert/assertauto"
-	"github.com/pierrre/assert/ext/pierrreerrors"
-	"github.com/pierrre/assert/ext/pierrrepretty"
 	. "github.com/pierrre/compare"
 )
-
-func init() {
-	// Prevent import cycle.
-	assert.DeepEqualer = func(v1, v2 any) (diff string, equal bool) {
-		res := Compare(v1, v2)
-		if len(res) == 0 {
-			return "", true
-		}
-		diff = fmt.Sprintf("%+v", res)
-		return diff, false
-	}
-	pierrrepretty.ConfigureDefault()
-	pierrreerrors.Configure()
-}
 
 func ExampleCompare() {
 	type T struct {
