@@ -415,9 +415,13 @@ func (c *Comparator) compareUnsafePointer(v1, v2 reflect.Value) Result {
 	}
 	return Result{Difference{
 		Message: msgUnsafePointerNotEqual,
-		V1:      "0x" + strconv.FormatUint(uint64(p1), 16),
-		V2:      "0x" + strconv.FormatUint(uint64(p2), 16),
+		V1:      uintptrToString(p1),
+		V2:      uintptrToString(p2),
 	}}
+}
+
+func uintptrToString(p uintptr) string {
+	return "0x" + strconv.FormatUint(uint64(p), 16)
 }
 
 func (c *Comparator) compareChan(v1, v2 reflect.Value) Result {
