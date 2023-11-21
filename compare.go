@@ -15,17 +15,17 @@ import (
 	"github.com/pierrre/go-libs/strconvio"
 )
 
-// Compare compares 2 values with DefaultComparator.
+// Compare compares 2 values with [DefaultComparator].
 func Compare(v1, v2 any) Result {
 	return DefaultComparator.Compare(v1, v2)
 }
 
-// DefaultComparator is the default Comparator.
+// DefaultComparator is the default [Comparator].
 var DefaultComparator = NewComparator()
 
 // Comparator compares 2 values.
 //
-// It should be created with NewComparator().
+// It should be created with [NewComparator].
 type Comparator struct {
 	// MaxDepth is the maximum depth of the comparison.
 	// If the value is reached, the comparison is stopped.
@@ -47,7 +47,7 @@ type Comparator struct {
 	Funcs []Func
 }
 
-// NewComparator returns a new Comparator initialized with default values.
+// NewComparator returns a new [Comparator] initialized with default values.
 func NewComparator() *Comparator {
 	return &Comparator{
 		SliceMaxDifferences: 10,
@@ -521,6 +521,7 @@ func (st *State) reset() {
 	st.Visited = st.Visited[:0]
 }
 
+// Visited represents a visited pair of values.
 type Visited struct {
 	V1, V2 uintptr
 }
@@ -541,7 +542,7 @@ func (c *Comparator) compareFuncs(st *State, v1, v2 reflect.Value) (Result, bool
 
 var typeByteSlice = reflect.TypeOf([]byte(nil))
 
-// NewBytesEqualFunc returns a Func that compares byte slices with bytes.Equal().
+// NewBytesEqualFunc returns a [Func] that compares byte slices with bytes.Equal().
 func NewBytesEqualFunc() Func {
 	return compareBytesEqual
 }
@@ -561,7 +562,7 @@ func compareBytesEqual(c *Comparator, st *State, v1, v2 reflect.Value) (Result, 
 
 var typeReflectValue = reflect.TypeOf(reflect.Value{})
 
-// NewReflectValueFunc returns a Func that compares reflect.Value.
+// NewReflectValueFunc returns a [Func] that compares reflect.Value.
 func NewReflectValueFunc() Func {
 	return compareReflectValue
 }
@@ -580,7 +581,7 @@ func compareReflectValue(c *Comparator, st *State, v1, v2 reflect.Value) (Result
 	return c.compare(st, v1, v2), true
 }
 
-// NewMethodEqualFunc returns a Func that compares with the method .Equal().
+// NewMethodEqualFunc returns a [Func] that compares with the method .Equal().
 func NewMethodEqualFunc() Func {
 	return compareMethodEqual
 }
@@ -630,7 +631,7 @@ func getMethodEqualFunc(typ reflect.Type) (reflect.Value, bool) {
 	return met.Func, true
 }
 
-// NewMethodCmpFunc returns a Func that compares with the method .Cmp().
+// NewMethodCmpFunc returns a [Func] that compares with the method .Cmp().
 func NewMethodCmpFunc() Func {
 	return compareMethodCmp
 }
@@ -680,12 +681,12 @@ func getMethodCmpFunc(typ reflect.Type) (reflect.Value, bool) {
 	return met.Func, true
 }
 
-// Result is a list of Difference.
+// Result is a list of [Difference].
 type Result []Difference
 
-// Format implements fmt.Formatter.
+// Format implements [fmt.Formatter].
 //
-// See Difference.Format() for supported verb and flag.
+// See [Difference.Format] for supported verb and flag.
 func (r Result) Format(s fmt.State, verb rune) {
 	if verb != 'v' {
 		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, r)
@@ -716,7 +717,7 @@ type Difference struct {
 	V2      string `json:"v2,omitempty"`
 }
 
-// Format implements fmt.Formatter.
+// Format implements [fmt.Formatter].
 //
 // It only supports the 'v' verb.
 // By default, it show the path and message.
@@ -764,7 +765,7 @@ const (
 // It helps to prepend elements to the path efficiently.
 type Path []PathElem
 
-// Format implements fmt.Formatter.
+// Format implements [fmt.Formatter].
 //
 // It only supports the 'v' verb.
 func (p Path) Format(s fmt.State, verb rune) {
@@ -777,14 +778,14 @@ func (p Path) Format(s fmt.State, verb rune) {
 	}
 }
 
-// PathElem is a single element in a Path.
+// PathElem is a single element in a [Path].
 type PathElem struct {
 	Struct *string `json:"struct,omitempty"`
 	Map    *string `json:"map,omitempty"`
 	Index  *int    `json:"index,omitempty"`
 }
 
-// Format implements fmt.Formatter.
+// Format implements [fmt.Formatter].
 //
 // It only supports the 'v' verb.
 func (e PathElem) Format(s fmt.State, verb rune) {
