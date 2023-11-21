@@ -759,7 +759,7 @@ const (
 	msgMethodCmpNotEqual     = "method .Cmp() returned %d"
 )
 
-// Path represents a field path, which is a list of PathElem.
+// Path represents a field path, which is a list of [PathElem].
 //
 // Elements are stored in reverse order, the first element is the deepest.
 // It helps to prepend elements to the path efficiently.
