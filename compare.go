@@ -277,12 +277,9 @@ func (c *Comparator) compareArrayIndex(st *State, v1, v2 reflect.Value, i int) R
 	if len(r) == 0 {
 		return nil
 	}
-	for j, d := range r {
-		d.Path = append(d.Path, PathElem{
-			Index: toPtr(i),
-		})
-		r[j] = d
-	}
+	r.pathAppend(PathElem{
+		Index: toPtr(i),
+	})
 	return r
 }
 
@@ -330,12 +327,9 @@ func (c *Comparator) compareStructField(st *State, v1, v2 reflect.Value, i int) 
 		return nil
 	}
 	f := v1.Type().Field(i).Name
-	for j, d := range r {
-		d.Path = append(d.Path, PathElem{
-			Struct: toPtr(f),
-		})
-		r[j] = d
-	}
+	r.pathAppend(PathElem{
+		Struct: toPtr(f),
+	})
 	return r
 }
 
@@ -397,13 +391,9 @@ func (c *Comparator) compareMapKey(st *State, v1, v2, k reflect.Value) Result {
 	if len(r) == 0 {
 		return nil
 	}
-	pe := PathElem{
+	r.pathAppend(PathElem{
 		Map: toPtr(fmt.Sprint(k)),
-	}
-	for i, d := range r {
-		d.Path = append(d.Path, pe)
-		r[i] = d
-	}
+	})
 	return r
 }
 
@@ -705,6 +695,12 @@ func (r Result) Format(s fmt.State, verb rune) {
 			_, _ = s.Write(resultNewLineBytes)
 		}
 		d.Format(s, verb)
+	}
+}
+
+func (r Result) pathAppend(pe PathElem) {
+	for i := range r {
+		r[i].Path = append(r[i].Path, pe)
 	}
 }
 
