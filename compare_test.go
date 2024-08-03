@@ -416,14 +416,14 @@ var compareTestCases = []testCase{
 		name: "MapNotEqualMaxDifferences",
 		v1: func() map[int]int {
 			m := make(map[int]int)
-			for i := 0; i < DefaultComparator.SliceMaxDifferences*2; i++ {
+			for i := range DefaultComparator.SliceMaxDifferences * 2 {
 				m[i] = i
 			}
 			return m
 		}(),
 		v2: func() map[int]int {
 			m := make(map[int]int)
-			for i := 0; i < DefaultComparator.SliceMaxDifferences*2; i++ {
+			for i := range DefaultComparator.SliceMaxDifferences * 2 {
 				m[i] = i + 1
 			}
 			return m
@@ -602,7 +602,7 @@ func BenchmarkCompare(b *testing.B) {
 	for _, tc := range compareTestCases {
 		b.Run(tc.name, func(b *testing.B) {
 			c := tc.newComparator()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				c.Compare(tc.v1, tc.v2)
 			}
 		})
@@ -662,7 +662,7 @@ func TestResultFormatAllocs(t *testing.T) {
 
 func BenchmarkResultFormat(b *testing.B) {
 	var it any = testResult
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		_, _ = fmt.Fprintf(io.Discard, "%+v", it)
 	}
 }
@@ -756,7 +756,7 @@ func BenchmarkPathFormat(b *testing.B) {
 	for _, tc := range pathTestCases {
 		b.Run(tc.name, func(b *testing.B) {
 			var it any = tc.path
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				_, _ = fmt.Fprintf(io.Discard, "%v", it)
 			}
 		})
