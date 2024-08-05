@@ -21,7 +21,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf(true),
 			reflect.ValueOf(false),
 		},
-		typ: reflect.TypeOf(false),
+		typ: reflect.TypeFor[bool](),
 		expected: []reflect.Value{
 			reflect.ValueOf(false),
 			reflect.ValueOf(true),
@@ -33,7 +33,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf(int(2)),
 			reflect.ValueOf(int(1)),
 		},
-		typ: reflect.TypeOf(int(0)),
+		typ: reflect.TypeFor[int](),
 		expected: []reflect.Value{
 			reflect.ValueOf(int(1)),
 			reflect.ValueOf(int(2)),
@@ -45,7 +45,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf(uint(2)),
 			reflect.ValueOf(uint(1)),
 		},
-		typ: reflect.TypeOf(uint(0)),
+		typ: reflect.TypeFor[uint](),
 		expected: []reflect.Value{
 			reflect.ValueOf(uint(1)),
 			reflect.ValueOf(uint(2)),
@@ -57,7 +57,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf(float64(2)),
 			reflect.ValueOf(float64(1)),
 		},
-		typ: reflect.TypeOf(float64(0)),
+		typ: reflect.TypeFor[float64](),
 		expected: []reflect.Value{
 			reflect.ValueOf(float64(1)),
 			reflect.ValueOf(float64(2)),
@@ -71,7 +71,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf(complex(2, 1)),
 			reflect.ValueOf(complex(1, 2)),
 		},
-		typ: reflect.TypeOf(complex(0, 0)),
+		typ: reflect.TypeFor[complex128](),
 		expected: []reflect.Value{
 			reflect.ValueOf(complex(1, 1)),
 			reflect.ValueOf(complex(1, 2)),
@@ -85,7 +85,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf("b"),
 			reflect.ValueOf("a"),
 		},
-		typ: reflect.TypeOf(""),
+		typ: reflect.TypeFor[string](),
 		expected: []reflect.Value{
 			reflect.ValueOf("a"),
 			reflect.ValueOf("b"),
@@ -97,7 +97,7 @@ var sortMapsKeysTestCases = []struct {
 			reflect.ValueOf(net.ParseIP("2.2.2.2")),
 			reflect.ValueOf(net.ParseIP("1.1.1.1")),
 		},
-		typ: reflect.TypeOf(net.IP{}),
+		typ: reflect.TypeFor[net.IP](),
 		expected: []reflect.Value{
 			reflect.ValueOf(net.ParseIP("1.1.1.1")),
 			reflect.ValueOf(net.ParseIP("2.2.2.2")),

@@ -534,7 +534,7 @@ func (c *Comparator) compareFuncs(st *State, v1, v2 reflect.Value) (Result, bool
 	return nil, false
 }
 
-var typeByteSlice = reflect.TypeOf([]byte(nil))
+var typeByteSlice = reflect.TypeFor[[]byte]()
 
 // NewBytesEqualFunc returns a [Func] that compares byte slices with bytes.Equal().
 func NewBytesEqualFunc() Func {
@@ -554,7 +554,7 @@ func compareBytesEqual(c *Comparator, st *State, v1, v2 reflect.Value) (Result, 
 	return nil, false
 }
 
-var typeReflectValue = reflect.TypeOf(reflect.Value{})
+var typeReflectValue = reflect.TypeFor[reflect.Value]()
 
 // NewReflectValueFunc returns a [Func] that compares reflect.Value.
 func NewReflectValueFunc() Func {
@@ -600,6 +600,7 @@ func compareMethodEqual(c *Comparator, st *State, v1, v2 reflect.Value) (Result,
 var (
 	equalMethodFuncsLock sync.Mutex
 	equalMethodFuncs     = make(map[reflect.Type]*reflect.Value)
+	typeBool             = reflect.TypeFor[bool]()
 )
 
 func getMethodEqualFunc(typ reflect.Type) (reflect.Value, bool) {
@@ -618,7 +619,7 @@ func getMethodEqualFunc(typ reflect.Type) (reflect.Value, bool) {
 		return reflect.Value{}, false
 	}
 	metTyp := met.Type
-	if metTyp.NumIn() != 2 || metTyp.In(0) != typ || metTyp.In(1) != typ || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(true) {
+	if metTyp.NumIn() != 2 || metTyp.In(0) != typ || metTyp.In(1) != typ || metTyp.NumOut() != 1 || metTyp.Out(0) != typeBool {
 		return reflect.Value{}, false
 	}
 	equalMethodFuncs[typ] = &met.Func
@@ -650,6 +651,7 @@ func compareMethodCmp(c *Comparator, st *State, v1, v2 reflect.Value) (Result, b
 var (
 	cmdMethodFuncsLock sync.Mutex
 	cmdMethodFuncs     = make(map[reflect.Type]*reflect.Value)
+	typeInt            = reflect.TypeFor[int]()
 )
 
 func getMethodCmpFunc(typ reflect.Type) (reflect.Value, bool) {
@@ -668,7 +670,7 @@ func getMethodCmpFunc(typ reflect.Type) (reflect.Value, bool) {
 		return reflect.Value{}, false
 	}
 	metTyp := met.Type
-	if metTyp.NumIn() != 2 || metTyp.In(0) != typ || metTyp.In(1) != typ || metTyp.NumOut() != 1 || metTyp.Out(0) != reflect.TypeOf(int(1)) {
+	if metTyp.NumIn() != 2 || metTyp.In(0) != typ || metTyp.In(1) != typ || metTyp.NumOut() != 1 || metTyp.Out(0) != typeInt {
 		return reflect.Value{}, false
 	}
 	cmdMethodFuncs[typ] = &met.Func
