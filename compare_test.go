@@ -590,10 +590,9 @@ func TestCompareAllocs(t *testing.T) {
 	for _, tc := range compareTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 			c := tc.newComparator()
-			allocs := testing.AllocsPerRun(100, func() {
+			assertauto.AllocsPerRun(t, 100, func() {
 				c.Compare(tc.v1, tc.v2)
 			})
-			assertauto.Equal(t, allocs)
 		})
 	}
 }
