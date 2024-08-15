@@ -13,6 +13,7 @@ import (
 
 	"github.com/pierrre/compare/internal"
 	"github.com/pierrre/go-libs/strconvio"
+	"github.com/pierrre/go-libs/syncutil"
 )
 
 // Compare compares 2 values with [DefaultComparator].
@@ -63,9 +64,8 @@ func NewComparator() *Comparator {
 
 // Compare compares 2 values.
 func (c *Comparator) Compare(v1, v2 any) Result {
-	stItf := statePool.Get()
-	defer statePool.Put(stItf)
-	st := stItf.(*State) //nolint:forcetypeassert // The pool only contains *State.
+	st := statePool.Get()
+	defer statePool.Put(st)
 	st.reset()
 	return c.compare(
 		st,
@@ -496,8 +496,8 @@ func (c *Comparator) compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
 	return nil, false
 }
 
-var statePool = &sync.Pool{
-	New: func() any {
+var statePool = syncutil.PoolFor[State]{
+	New: func() *State {
 		return &State{}
 	},
 }
