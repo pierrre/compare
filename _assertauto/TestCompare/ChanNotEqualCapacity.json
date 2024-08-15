@@ -1,13 +1,16 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"message": "capacity not equal",
-					"v1": "1",
-					"v2": "2"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"message": "capacity not equal",
+						"v1": "1",
+						"v2": "2"
+					}
+				]
+			}
 		}
 	]
 }

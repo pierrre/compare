@@ -1,11 +1,14 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"message": "method .Cmp() returned -1"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"message": "method .Cmp() returned -1"
+					}
+				]
+			}
 		}
 	]
 }

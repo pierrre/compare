@@ -1,7 +1,10 @@
 {
 	"entries": [
 		{
-			"deep_equal": null
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": null
+			}
 		}
 	]
 }

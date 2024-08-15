@@ -1,28 +1,31 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"path": [
-						{
-							"map": "a"
-						}
-					],
-					"message": "map key not defined",
-					"v1": "true",
-					"v2": "false"
-				},
-				{
-					"path": [
-						{
-							"map": "b"
-						}
-					],
-					"message": "map key not defined",
-					"v1": "false",
-					"v2": "true"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"path": [
+							{
+								"map": "a"
+							}
+						],
+						"message": "map key not defined",
+						"v1": "true",
+						"v2": "false"
+					},
+					{
+						"path": [
+							{
+								"map": "b"
+							}
+						],
+						"message": "map key not defined",
+						"v1": "false",
+						"v2": "true"
+					}
+				]
+			}
 		}
 	]
 }

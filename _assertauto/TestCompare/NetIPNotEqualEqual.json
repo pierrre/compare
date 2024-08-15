@@ -1,11 +1,14 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"message": "method .Equal() returned false"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"message": "method .Equal() returned false"
+					}
+				]
+			}
 		}
 	]
 }

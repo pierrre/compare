@@ -1,7 +1,10 @@
 {
 	"entries": [
 		{
-			"equal": "unsafe pointer not equal"
+			"equal": {
+				"type": "string",
+				"value": "unsafe pointer not equal"
+			}
 		}
 	]
 }

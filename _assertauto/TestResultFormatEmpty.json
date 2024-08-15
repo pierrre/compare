@@ -1,7 +1,10 @@
 {
 	"entries": [
 		{
-			"equal": "<none>"
+			"equal": {
+				"type": "string",
+				"value": "<none>"
+			}
 		}
 	]
 }

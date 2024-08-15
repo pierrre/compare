@@ -1,7 +1,10 @@
 {
 	"entries": [
 		{
-			"deep_equal": ".test"
+			"deep_equal": {
+				"type": "string",
+				"value": ".test"
+			}
 		}
 	]
 }

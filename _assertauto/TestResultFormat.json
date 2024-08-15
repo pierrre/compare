@@ -1,7 +1,10 @@
 {
 	"entries": [
 		{
-			"equal": ".: test1\n\tv1=1\n\tv2=2\n.: test2\n\tv1=a\n\tv2=b"
+			"equal": {
+				"type": "string",
+				"value": ".: test1\n\tv1=1\n\tv2=2\n.: test2\n\tv1=a\n\tv2=b"
+			}
 		}
 	]
 }

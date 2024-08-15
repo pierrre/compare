@@ -1,13 +1,16 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"message": "bool not equal",
-					"v1": "true",
-					"v2": "false"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"message": "bool not equal",
+						"v1": "true",
+						"v2": "false"
+					}
+				]
+			}
 		}
 	]
 }

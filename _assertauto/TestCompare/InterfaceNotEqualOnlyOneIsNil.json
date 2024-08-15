@@ -1,18 +1,21 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"path": [
-						{
-							"index": 0
-						}
-					],
-					"message": "only one is nil",
-					"v1": "false",
-					"v2": "true"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"path": [
+							{
+								"index": 0
+							}
+						],
+						"message": "only one is nil",
+						"v1": "false",
+						"v2": "true"
+					}
+				]
+			}
 		}
 	]
 }

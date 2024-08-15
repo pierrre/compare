@@ -1,18 +1,21 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"path": [
-						{
-							"struct": "unexported"
-						}
-					],
-					"message": "int not equal",
-					"v1": "1",
-					"v2": "2"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"path": [
+							{
+								"struct": "unexported"
+							}
+						],
+						"message": "int not equal",
+						"v1": "1",
+						"v2": "2"
+					}
+				]
+			}
 		}
 	]
 }

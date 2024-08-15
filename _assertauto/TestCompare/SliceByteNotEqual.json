@@ -1,18 +1,21 @@
 {
 	"entries": [
 		{
-			"deep_equal": [
-				{
-					"path": [
-						{
-							"index": 0
-						}
-					],
-					"message": "uint not equal",
-					"v1": "0",
-					"v2": "1"
-				}
-			]
+			"deep_equal": {
+				"type": "github.com/pierrre/compare.Result",
+				"value": [
+					{
+						"path": [
+							{
+								"index": 0
+							}
+						],
+						"message": "uint not equal",
+						"v1": "0",
+						"v2": "1"
+					}
+				]
+			}
 		}
 	]
 }

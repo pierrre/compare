@@ -1,7 +1,10 @@
 {
 	"entries": [
 		{
-			"equal": "%!s(compare.Difference)"
+			"equal": {
+				"type": "string",
+				"value": "%!s(compare.Difference)"
+			}
 		}
 	]
 }
