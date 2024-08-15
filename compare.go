@@ -4,7 +4,6 @@ package compare
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"reflect"
 	"runtime"
 	"slices"
@@ -14,6 +13,7 @@ import (
 	"github.com/pierrre/compare/internal"
 	"github.com/pierrre/go-libs/strconvio"
 	"github.com/pierrre/go-libs/syncutil"
+	"github.com/pierrre/go-libs/unsafeio"
 )
 
 // Compare compares 2 values with [DefaultComparator].
@@ -730,14 +730,14 @@ func (d Difference) Format(s fmt.State, verb rune) {
 		return
 	}
 	d.Path.Format(s, verb)
-	_, _ = io.WriteString(s, ": ")
-	_, _ = io.WriteString(s, d.Message)
+	_, _ = unsafeio.WriteString(s, ": ")
+	_, _ = unsafeio.WriteString(s, d.Message)
 	if s.Flag('+') {
 		if d.V1 != "" || d.V2 != "" {
-			_, _ = io.WriteString(s, "\n\tv1=")
-			_, _ = io.WriteString(s, d.V1)
-			_, _ = io.WriteString(s, "\n\tv2=")
-			_, _ = io.WriteString(s, d.V2)
+			_, _ = unsafeio.WriteString(s, "\n\tv1=")
+			_, _ = unsafeio.WriteString(s, d.V1)
+			_, _ = unsafeio.WriteString(s, "\n\tv2=")
+			_, _ = unsafeio.WriteString(s, d.V2)
 		}
 	}
 }
@@ -772,7 +772,7 @@ type Path []PathElem
 // It only supports the 'v' verb.
 func (p Path) Format(s fmt.State, verb rune) {
 	if len(p) == 0 {
-		_, _ = io.WriteString(s, ".")
+		_, _ = unsafeio.WriteString(s, ".")
 		return
 	}
 	for i := len(p) - 1; i >= 0; i-- {
@@ -793,16 +793,16 @@ type PathElem struct {
 func (e PathElem) Format(s fmt.State, verb rune) {
 	switch {
 	case e.Struct != nil:
-		_, _ = io.WriteString(s, ".")
-		_, _ = io.WriteString(s, *e.Struct)
+		_, _ = unsafeio.WriteString(s, ".")
+		_, _ = unsafeio.WriteString(s, *e.Struct)
 	case e.Map != nil:
-		_, _ = io.WriteString(s, "[")
-		_, _ = io.WriteString(s, *e.Map)
-		_, _ = io.WriteString(s, "]")
+		_, _ = unsafeio.WriteString(s, "[")
+		_, _ = unsafeio.WriteString(s, *e.Map)
+		_, _ = unsafeio.WriteString(s, "]")
 	case e.Index != nil:
-		_, _ = io.WriteString(s, "[")
+		_, _ = unsafeio.WriteString(s, "[")
 		_, _ = strconvio.WriteInt(s, int64(*e.Index), 10)
-		_, _ = io.WriteString(s, "]")
+		_, _ = unsafeio.WriteString(s, "]")
 	}
 }
 
