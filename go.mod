@@ -7,4 +7,4 @@ require (
 	github.com/pierrre/go-libs v0.7.3
 )
 
-require github.com/pierrre/pretty v0.3.6 // indirect
+require github.com/pierrre/pretty v0.3.7 // indirect
