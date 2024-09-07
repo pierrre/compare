@@ -3,7 +3,7 @@
 		{
 			"allocs_per_run": {
 				"runs": 100,
-				"allocs": 12
+				"allocs": 0
 			}
 		}
 	]

@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/pierrre/compare/internal"
+	"github.com/pierrre/go-libs/reflectutil"
 	"github.com/pierrre/go-libs/strconvio"
 	"github.com/pierrre/go-libs/syncutil"
 	"github.com/pierrre/go-libs/unsafeio"
@@ -333,6 +333,7 @@ func (c *Comparator) compareStructField(st *State, v1, v2 reflect.Value, i int) 
 	return r
 }
 
+//nolint:gocyclo // TODO improve.
 func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 	if r, stop := c.compareNilLenPointer(v1, v2); stop {
 		return r
@@ -343,57 +344,79 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 	defer c.endRecursion(st)
 	var r Result
 	diffCount := 0
-	for _, k := range getSortedMapsKeys(v1, v2) {
-		ri := c.compareMapKey(st, v1, v2, k)
-		r = append(r, ri...)
-		if len(ri) > 0 {
+	es1 := reflectutil.GetSortedMap(v1)
+	es2 := reflectutil.GetSortedMap(v2)
+	defer es1.Release()
+	defer es2.Release()
+	cmpFunc := reflectutil.GetCompareFunc(v1.Type().Key())
+	i1 := 0
+	i2 := 0
+	for i1 < len(es1) || i2 < len(es2) {
+		switch {
+		case i1 >= len(es1):
+			r = append(r, Difference{
+				Path: Path{{
+					Map: toPtr(fmt.Sprint(es2[i2].Key)),
+				}},
+				Message: msgMapKeyNotDefined,
+				V1:      strconv.FormatBool(false),
+				V2:      strconv.FormatBool(true),
+			})
+			i2++
 			diffCount++
-			if diffCount >= c.MapMaxDifferences && c.MapMaxDifferences > 0 {
-				break
+		case i2 >= len(es2):
+			r = append(r, Difference{
+				Path: Path{{
+					Map: toPtr(fmt.Sprint(es1[i1].Key)),
+				}},
+				Message: msgMapKeyNotDefined,
+				V1:      strconv.FormatBool(true),
+				V2:      strconv.FormatBool(false),
+			})
+			i1++
+			diffCount++
+		default:
+			cm := cmpFunc(es1[i1].Key, es2[i2].Key)
+			switch {
+			case cm < 0:
+				r = append(r, Difference{
+					Path: Path{{
+						Map: toPtr(fmt.Sprint(es1[i1].Key)),
+					}},
+					Message: msgMapKeyNotDefined,
+					V1:      strconv.FormatBool(true),
+					V2:      strconv.FormatBool(false),
+				})
+				i1++
+				diffCount++
+			case cm > 0:
+				r = append(r, Difference{
+					Path: Path{{
+						Map: toPtr(fmt.Sprint(es2[i2].Key)),
+					}},
+					Message: msgMapKeyNotDefined,
+					V1:      strconv.FormatBool(false),
+					V2:      strconv.FormatBool(true),
+				})
+				i2++
+				diffCount++
+			default:
+				er := c.compare(st, es1[i1].Value, es2[i2].Value)
+				if len(er) > 0 {
+					er.pathAppend(PathElem{
+						Map: toPtr(fmt.Sprint(es1[i1].Key)),
+					})
+					r = append(r, er...)
+					diffCount++
+				}
+				i1++
+				i2++
 			}
 		}
-	}
-	return r
-}
-
-func getSortedMapsKeys(v1, v2 reflect.Value) []reflect.Value {
-	ks := getMapsKeys(v1, v2)
-	internal.SortMapsKeys(v1.Type().Key(), ks)
-	return ks
-}
-
-func getMapsKeys(v1, v2 reflect.Value) []reflect.Value {
-	ks := v1.MapKeys()
-	for _, k2 := range v2.MapKeys() {
-		if !v1.MapIndex(k2).IsValid() {
-			ks = append(ks, k2)
+		if diffCount >= c.MapMaxDifferences && c.MapMaxDifferences > 0 {
+			break
 		}
 	}
-	return ks
-}
-
-func (c *Comparator) compareMapKey(st *State, v1, v2, k reflect.Value) Result {
-	v1 = v1.MapIndex(k)
-	v2 = v2.MapIndex(k)
-	vl1 := v1.IsValid()
-	vl2 := v2.IsValid()
-	if !vl1 || !vl2 {
-		return Result{Difference{
-			Path: Path{{
-				Map: toPtr(fmt.Sprint(k)),
-			}},
-			Message: msgMapKeyNotDefined,
-			V1:      strconv.FormatBool(vl1),
-			V2:      strconv.FormatBool(vl2),
-		}}
-	}
-	r := c.compare(st, v1, v2)
-	if len(r) == 0 {
-		return nil
-	}
-	r.pathAppend(PathElem{
-		Map: toPtr(fmt.Sprint(k)),
-	})
 	return r
 }
 
