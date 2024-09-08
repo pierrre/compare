@@ -352,19 +352,17 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 	i1 := 0
 	i2 := 0
 	for i1 < len(es1) || i2 < len(es2) {
+		var cm int
 		switch {
 		case i1 >= len(es1):
-			r = append(r, Difference{
-				Path: Path{{
-					Map: toPtr(fmt.Sprint(es2[i2].Key)),
-				}},
-				Message: msgMapKeyNotDefined,
-				V1:      strconv.FormatBool(false),
-				V2:      strconv.FormatBool(true),
-			})
-			i2++
-			diffCount++
+			cm = 1
 		case i2 >= len(es2):
+			cm = -1
+		default:
+			cm = cmpFunc(es1[i1].Key, es2[i2].Key)
+		}
+		switch {
+		case cm < 0:
 			r = append(r, Difference{
 				Path: Path{{
 					Map: toPtr(fmt.Sprint(es1[i1].Key)),
@@ -375,43 +373,28 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 			})
 			i1++
 			diffCount++
+		case cm > 0:
+			r = append(r, Difference{
+				Path: Path{{
+					Map: toPtr(fmt.Sprint(es2[i2].Key)),
+				}},
+				Message: msgMapKeyNotDefined,
+				V1:      strconv.FormatBool(false),
+				V2:      strconv.FormatBool(true),
+			})
+			i2++
+			diffCount++
 		default:
-			cm := cmpFunc(es1[i1].Key, es2[i2].Key)
-			switch {
-			case cm < 0:
-				r = append(r, Difference{
-					Path: Path{{
-						Map: toPtr(fmt.Sprint(es1[i1].Key)),
-					}},
-					Message: msgMapKeyNotDefined,
-					V1:      strconv.FormatBool(true),
-					V2:      strconv.FormatBool(false),
+			er := c.compare(st, es1[i1].Value, es2[i2].Value)
+			if len(er) > 0 {
+				er.pathAppend(PathElem{
+					Map: toPtr(fmt.Sprint(es1[i1].Key)),
 				})
-				i1++
+				r = append(r, er...)
 				diffCount++
-			case cm > 0:
-				r = append(r, Difference{
-					Path: Path{{
-						Map: toPtr(fmt.Sprint(es2[i2].Key)),
-					}},
-					Message: msgMapKeyNotDefined,
-					V1:      strconv.FormatBool(false),
-					V2:      strconv.FormatBool(true),
-				})
-				i2++
-				diffCount++
-			default:
-				er := c.compare(st, es1[i1].Value, es2[i2].Value)
-				if len(er) > 0 {
-					er.pathAppend(PathElem{
-						Map: toPtr(fmt.Sprint(es1[i1].Key)),
-					})
-					r = append(r, er...)
-					diffCount++
-				}
-				i1++
-				i2++
 			}
+			i1++
+			i2++
 		}
 		if diffCount >= c.MapMaxDifferences && c.MapMaxDifferences > 0 {
 			break
