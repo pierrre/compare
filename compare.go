@@ -502,7 +502,7 @@ func (c *Comparator) compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
 	return nil, false
 }
 
-var statePool = syncutil.PoolFor[*State]{
+var statePool = syncutil.Pool[*State]{
 	New: func() *State {
 		return &State{}
 	},
