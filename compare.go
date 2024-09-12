@@ -11,9 +11,6 @@ import (
 	"sync"
 
 	"github.com/pierrre/go-libs/reflectutil"
-	"github.com/pierrre/go-libs/strconvio"
-	"github.com/pierrre/go-libs/syncutil"
-	"github.com/pierrre/go-libs/unsafeio"
 )
 
 // Compare compares 2 values with [DefaultComparator].
@@ -502,35 +499,6 @@ func (c *Comparator) compareNilLenPointer(v1, v2 reflect.Value) (Result, bool) {
 	return nil, false
 }
 
-var statePool = syncutil.Pool[*State]{
-	New: func() *State {
-		return &State{}
-	},
-}
-
-// State represents the state of a comparison.
-//
-// Functions must restore the original state when they return.
-type State struct {
-	Depth   int
-	Visited []Visited
-}
-
-func (st *State) reset() {
-	st.Depth = 0
-	st.Visited = st.Visited[:0]
-}
-
-// Visited represents a visited pair of values.
-type Visited struct {
-	V1, V2 uintptr
-}
-
-// Func represents a comparison function.
-// It is guaranteed that both values are valid and of the same type.
-// If the returned value "stop" is true, the comparison will stop.
-type Func func(c *Comparator, st *State, v1, v2 reflect.Value) (r Result, stop bool)
-
 func (c *Comparator) compareFuncs(st *State, v1, v2 reflect.Value) (Result, bool) {
 	for _, f := range c.Funcs {
 		if r, stop := f(c, st, v1, v2); stop {
@@ -681,137 +649,4 @@ func getMethodCmpFunc(typ reflect.Type) (reflect.Value, bool) {
 	}
 	cmdMethodFuncs[typ] = &met.Func
 	return met.Func, true
-}
-
-// Result is a list of [Difference].
-type Result []Difference
-
-// Format implements [fmt.Formatter].
-//
-// See [Difference.Format] for supported verb and flag.
-func (r Result) Format(s fmt.State, verb rune) {
-	if verb != 'v' {
-		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, r)
-		return
-	}
-	if len(r) == 0 {
-		_, _ = s.Write(resultNoneBytes)
-		return
-	}
-	for i, d := range r {
-		if i > 0 {
-			_, _ = s.Write(resultNewLineBytes)
-		}
-		d.Format(s, verb)
-	}
-}
-
-func (r Result) pathAppend(pe PathElem) {
-	for i := range r {
-		r[i].Path = append(r[i].Path, pe)
-	}
-}
-
-var (
-	resultNoneBytes    = []byte("<none>")
-	resultNewLineBytes = []byte("\n")
-)
-
-// Difference represents a difference between 2 values.
-type Difference struct {
-	Path    Path   `json:"path,omitempty"`
-	Message string `json:"message,omitempty"`
-	V1      string `json:"v1,omitempty"`
-	V2      string `json:"v2,omitempty"`
-}
-
-// Format implements [fmt.Formatter].
-//
-// It only supports the 'v' verb.
-// By default, it show the path and message.
-// The '+' flag shows values V1 and V2.
-func (d Difference) Format(s fmt.State, verb rune) {
-	if verb != 'v' {
-		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, d)
-		return
-	}
-	d.Path.Format(s, verb)
-	_, _ = unsafeio.WriteString(s, ": ")
-	_, _ = unsafeio.WriteString(s, d.Message)
-	if s.Flag('+') {
-		if d.V1 != "" || d.V2 != "" {
-			_, _ = unsafeio.WriteString(s, "\n\tv1=")
-			_, _ = unsafeio.WriteString(s, d.V1)
-			_, _ = unsafeio.WriteString(s, "\n\tv2=")
-			_, _ = unsafeio.WriteString(s, d.V2)
-		}
-	}
-}
-
-const (
-	msgOnlyOneIsValid        = "only one is valid"
-	msgOnlyOneIsNil          = "only one is nil"
-	msgTypeNotEqual          = "type not equal"
-	msgCapacityNotEqual      = "capacity not equal"
-	msgLengthNotEqual        = "length not equal"
-	msgBoolNotEqual          = "bool not equal"
-	msgIntNotEqual           = "int not equal"
-	msgUintNotEqual          = "uint not equal"
-	msgFloatNotEqual         = "float not equal"
-	msgComplexNotEqual       = "complex not equal"
-	msgStringNotEqual        = "string not equal"
-	msgMapKeyNotDefined      = "map key not defined"
-	msgUnsafePointerNotEqual = "unsafe pointer not equal"
-	msgFuncPointerNotEqual   = "func pointer not equal"
-	msgMethodEqualFalse      = "method .Equal() returned false"
-	msgMethodCmpNotEqual     = "method .Cmp() returned %d"
-)
-
-// Path represents a field path, which is a list of [PathElem].
-//
-// Elements are stored in reverse order, the first element is the deepest.
-// It helps to prepend elements to the path efficiently.
-type Path []PathElem
-
-// Format implements [fmt.Formatter].
-//
-// It only supports the 'v' verb.
-func (p Path) Format(s fmt.State, verb rune) {
-	if len(p) == 0 {
-		_, _ = unsafeio.WriteString(s, ".")
-		return
-	}
-	for i := len(p) - 1; i >= 0; i-- {
-		p[i].Format(s, verb)
-	}
-}
-
-// PathElem is a single element in a [Path].
-type PathElem struct {
-	Struct *string `json:"struct,omitempty"`
-	Map    *string `json:"map,omitempty"`
-	Index  *int    `json:"index,omitempty"`
-}
-
-// Format implements [fmt.Formatter].
-//
-// It only supports the 'v' verb.
-func (e PathElem) Format(s fmt.State, verb rune) {
-	switch {
-	case e.Struct != nil:
-		_, _ = unsafeio.WriteString(s, ".")
-		_, _ = unsafeio.WriteString(s, *e.Struct)
-	case e.Map != nil:
-		_, _ = unsafeio.WriteString(s, "[")
-		_, _ = unsafeio.WriteString(s, *e.Map)
-		_, _ = unsafeio.WriteString(s, "]")
-	case e.Index != nil:
-		_, _ = unsafeio.WriteString(s, "[")
-		_, _ = strconvio.WriteInt(s, int64(*e.Index), 10)
-		_, _ = unsafeio.WriteString(s, "]")
-	}
-}
-
-func toPtr[V any](v V) *V {
-	return &v
 }
