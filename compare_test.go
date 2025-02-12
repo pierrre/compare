@@ -601,7 +601,7 @@ func BenchmarkCompare(b *testing.B) {
 	for _, tc := range compareTestCases {
 		b.Run(tc.name, func(b *testing.B) {
 			c := tc.newComparator()
-			for range b.N {
+			for b.Loop() {
 				c.Compare(tc.v1, tc.v2)
 			}
 		})
@@ -661,7 +661,7 @@ func TestResultFormatAllocs(t *testing.T) {
 
 func BenchmarkResultFormat(b *testing.B) {
 	var it any = testResult
-	for range b.N {
+	for b.Loop() {
 		_, _ = fmt.Fprintf(io.Discard, "%+v", it)
 	}
 }
@@ -755,7 +755,7 @@ func BenchmarkPathFormat(b *testing.B) {
 	for _, tc := range pathTestCases {
 		b.Run(tc.name, func(b *testing.B) {
 			var it any = tc.path
-			for range b.N {
+			for b.Loop() {
 				_, _ = fmt.Fprintf(io.Discard, "%v", it)
 			}
 		})
