@@ -581,7 +581,7 @@ func TestCompare(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			c := tc.newComparator()
 			r := c.Compare(tc.v1, tc.v2)
-			assertauto.DeepEqual(t, r)
+			assertauto.Equal(t, r)
 		})
 	}
 }
@@ -735,7 +735,7 @@ func TestPathFormat(t *testing.T) {
 	for _, tc := range pathTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := fmt.Sprintf("%v", tc.path)
-			assertauto.DeepEqual(t, s)
+			assertauto.Equal(t, s)
 		})
 	}
 }

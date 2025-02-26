@@ -1,0 +1,8 @@
+[compare.Result]([]compare.Difference) (len=1) {
+	{
+		Path: [compare.Path]([]compare.PathElem) <nil>,
+		Message: [string] (len=13) "int not equal",
+		V1: [string] (len=1) "1",
+		V2: [string] (len=1) "2",
+	},
+}

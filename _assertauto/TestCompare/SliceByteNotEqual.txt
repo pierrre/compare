@@ -1,0 +1,14 @@
+[compare.Result]([]compare.Difference) (len=1) {
+	{
+		Path: [compare.Path]([]compare.PathElem) (len=1) {
+			{
+				Struct: [*string] <nil>,
+				Map: [*string] <nil>,
+				Index: [*int] => 0,
+			},
+		},
+		Message: [string] (len=14) "uint not equal",
+		V1: [string] (len=1) "0",
+		V2: [string] (len=1) "1",
+	},
+}

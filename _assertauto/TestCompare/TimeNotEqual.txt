@@ -1,0 +1,8 @@
+[compare.Result]([]compare.Difference) (len=1) {
+	{
+		Path: [compare.Path]([]compare.PathElem) <nil>,
+		Message: [string] (len=30) "method .Equal() returned false",
+		V1: [string] (len=0) "",
+		V2: [string] (len=0) "",
+	},
+}

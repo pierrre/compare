@@ -1,0 +1,26 @@
+[compare.Result]([]compare.Difference) (len=2) {
+	{
+		Path: [compare.Path]([]compare.PathElem) (len=1) {
+			{
+				Struct: [*string] <nil>,
+				Map: [*string] => (len=1) "a",
+				Index: [*int] <nil>,
+			},
+		},
+		Message: [string] (len=19) "map key not defined",
+		V1: [string] (len=4) "true",
+		V2: [string] (len=5) "false",
+	},
+	{
+		Path: [compare.Path]([]compare.PathElem) (len=1) {
+			{
+				Struct: [*string] <nil>,
+				Map: [*string] => (len=1) "b",
+				Index: [*int] <nil>,
+			},
+		},
+		Message: [string] (len=19) "map key not defined",
+		V1: [string] (len=5) "false",
+		V2: [string] (len=4) "true",
+	},
+}
