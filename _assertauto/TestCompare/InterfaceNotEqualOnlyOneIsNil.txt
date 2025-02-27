@@ -1,6 +1,6 @@
-[compare.Result]([]compare.Difference) (len=1) {
+[github.com/pierrre/compare.Result]([]compare.Difference) (len=1) {
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,

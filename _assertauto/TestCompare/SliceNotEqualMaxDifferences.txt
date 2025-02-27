@@ -1,6 +1,6 @@
-[compare.Result]([]compare.Difference) (len=10) {
+[github.com/pierrre/compare.Result]([]compare.Difference) (len=10) {
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -12,7 +12,7 @@
 		V2: [string] (len=1) "1",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -24,7 +24,7 @@
 		V2: [string] (len=1) "2",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -36,7 +36,7 @@
 		V2: [string] (len=1) "3",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -48,7 +48,7 @@
 		V2: [string] (len=1) "4",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -60,7 +60,7 @@
 		V2: [string] (len=1) "5",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -72,7 +72,7 @@
 		V2: [string] (len=1) "6",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -84,7 +84,7 @@
 		V2: [string] (len=1) "7",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -96,7 +96,7 @@
 		V2: [string] (len=1) "8",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,
@@ -108,7 +108,7 @@
 		V2: [string] (len=1) "9",
 	},
 	{
-		Path: [compare.Path]([]compare.PathElem) (len=1) {
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) (len=1) {
 			{
 				Struct: [*string] <nil>,
 				Map: [*string] <nil>,

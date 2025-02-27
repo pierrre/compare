@@ -1,6 +1,6 @@
-[compare.Result]([]compare.Difference) (len=1) {
+[github.com/pierrre/compare.Result]([]compare.Difference) (len=1) {
 	{
-		Path: [compare.Path]([]compare.PathElem) <nil>,
+		Path: [github.com/pierrre/compare.Path]([]compare.PathElem) <nil>,
 		Message: [string] (len=16) "length not equal",
 		V1: [string] (len=1) "1",
 		V2: [string] (len=1) "2",
