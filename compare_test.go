@@ -431,8 +431,8 @@ var compareTestCases = []testCase{
 	},
 	{
 		name: "UnsafePointerEqual",
-		v1:   unsafe.Pointer(&testInt),
-		v2:   unsafe.Pointer(&testInt),
+		v1:   unsafe.Pointer(&testInt), //nolint:gosec // It's OK.
+		v2:   unsafe.Pointer(&testInt), //nolint:gosec // It's OK.
 	},
 	{
 		name: "ChanEqual",
@@ -609,8 +609,8 @@ func BenchmarkCompare(b *testing.B) {
 }
 
 func TestCompareUnsafePointerNotEqual(t *testing.T) {
-	v1 := unsafe.Pointer(&testInt)
-	v2 := unsafe.Pointer(&testSlice)
+	v1 := unsafe.Pointer(&testInt)   //nolint:gosec // It's OK.
+	v2 := unsafe.Pointer(&testSlice) //nolint:gosec // It's OK.
 	r := Compare(v1, v2)
 	assert.SliceLen(t, r, 1)
 	d := r[0]
@@ -655,7 +655,7 @@ func TestResultFormat(t *testing.T) {
 func TestResultFormatAllocs(t *testing.T) {
 	var it any = testResult
 	assert.AllocsPerRun(t, 100, func() {
-		fmt.Fprintf(io.Discard, "%+v", it)
+		_, _ = fmt.Fprintf(io.Discard, "%+v", it)
 	}, 0)
 }
 
@@ -745,7 +745,7 @@ func TestPathFormatAllocs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var it any = tc.path
 			assert.AllocsPerRun(t, 100, func() {
-				fmt.Fprintf(io.Discard, "%v", it)
+				_, _ = fmt.Fprintf(io.Discard, "%v", it)
 			}, 0)
 		})
 	}
