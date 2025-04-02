@@ -141,7 +141,7 @@ func (c *Comparator) compareType(v1, v2 reflect.Value) (Result, bool) {
 
 //nolint:gocyclo // Large switch/case is OK.
 func (c *Comparator) compareKind(st *State, v1, v2 reflect.Value) Result {
-	switch v1.Kind() { //nolint:exhaustive // All kinds are handled, Invalid should not happen.
+	switch v1.Kind() {
 	case reflect.Bool:
 		return c.compareBool(v1, v2)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
