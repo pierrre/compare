@@ -1,6 +1,6 @@
 github.com/pierrre/assert v0.8.2 h1:aRiBgO/oM2VoFhjXntz6Z5NAWEFVzGKjNVRTstIEyvo=
 github.com/pierrre/assert v0.8.2/go.mod h1:XXkwUuy9OBXTiOwIfLlRm76HZIh1Epz29O7QASNZlHk=
-github.com/pierrre/go-libs v0.12.0 h1:oNh+Et/bBj5Onj3jVnfRdJV4ILtrt78uSgSs2X3S9s0=
-github.com/pierrre/go-libs v0.12.0/go.mod h1:KzB6wXz2QK97zUGJpQ8n3cftty5tQwClltyrTmvNy6Y=
+github.com/pierrre/go-libs v0.12.1 h1:fMJMCf2YMkBXeJW9fY4w053O8ap0633em8bZdxlsELE=
+github.com/pierrre/go-libs v0.12.1/go.mod h1:gOMVJns4bNbvshF1+nCI+cxo6r4VrY7WQdAAEyy9jTI=
 github.com/pierrre/pretty v0.11.9 h1:iNyDzH10WZmdboJtp2L7QrZxpMwPLBHJ0igqM9U62f0=
 github.com/pierrre/pretty v0.11.9/go.mod h1:ugeYd3eWjwmhugZxM4loqkESx7vO70zFS3ok8supo2A=
