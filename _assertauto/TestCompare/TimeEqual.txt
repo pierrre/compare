@@ -1,1 +1,1 @@
-[github.com/pierrre/compare.Result]([]compare.Difference) <nil>
+[github.com/pierrre/compare.Result]([]github.com/pierrre/compare.Difference) <nil>
