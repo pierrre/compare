@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/pierrre/assert v0.9.0
-	github.com/pierrre/go-libs v0.19.6
+	github.com/pierrre/go-libs v0.21.0
 )
 
-require github.com/pierrre/pretty v0.18.7 // indirect
+require github.com/pierrre/pretty v0.18.8 // indirect
