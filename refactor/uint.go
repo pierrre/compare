@@ -2,7 +2,6 @@ package compare
 
 import (
 	"reflect"
-	"strconv"
 )
 
 type UintValuesComparator struct{}
@@ -22,10 +21,10 @@ func (vc *UintValuesComparator) CompareValues(st *State, v1, v2 reflect.Value) b
 	if ui1 == ui2 {
 		return true
 	}
-	st.Yield(&Difference{
+	st.Yield(Difference{
 		Message: "uint not equal",
-		V1:      strconv.FormatUint(ui1, 10),
-		V2:      strconv.FormatUint(ui2, 10),
+		V1:      v1,
+		V2:      v2,
 	})
 	return true
 }
