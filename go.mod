@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/pierrre/assert v0.11.1
-	github.com/pierrre/go-libs v0.25.0
+	github.com/pierrre/go-libs v0.25.2
 )
 
 require github.com/pierrre/pretty v0.23.0 // indirect
