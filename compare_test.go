@@ -695,7 +695,7 @@ var pathTestCases = []struct {
 		name: "Struct",
 		path: Path{
 			{
-				Struct: toPtr("test"),
+				Struct: new("test"),
 			},
 		},
 	},
@@ -703,7 +703,7 @@ var pathTestCases = []struct {
 		name: "Map",
 		path: Path{
 			{
-				Map: toPtr("test"),
+				Map: new("test"),
 			},
 		},
 	},
@@ -711,7 +711,7 @@ var pathTestCases = []struct {
 		name: "Index",
 		path: Path{
 			{
-				Index: toPtr(1),
+				Index: new(1),
 			},
 		},
 	},
@@ -719,13 +719,13 @@ var pathTestCases = []struct {
 		name: "All",
 		path: Path{
 			{
-				Index: toPtr(1),
+				Index: new(1),
 			},
 			{
-				Map: toPtr("test"),
+				Map: new("test"),
 			},
 			{
-				Struct: toPtr("test"),
+				Struct: new("test"),
 			},
 		},
 	},
@@ -760,8 +760,4 @@ func BenchmarkPathFormat(b *testing.B) {
 			}
 		})
 	}
-}
-
-func toPtr[V any](v V) *V {
-	return &v
 }

@@ -278,7 +278,7 @@ func (c *Comparator) compareArrayIndex(st *State, v1, v2 reflect.Value, i int) R
 		return nil
 	}
 	r.pathAppend(PathElem{
-		Index: toPtr(i),
+		Index: new(i),
 	})
 	return r
 }
@@ -328,7 +328,7 @@ func (c *Comparator) compareStructField(st *State, v1, v2 reflect.Value, i int) 
 	}
 	f := v1.Type().Field(i).Name
 	r.pathAppend(PathElem{
-		Struct: toPtr(f),
+		Struct: new(f),
 	})
 	return r
 }
@@ -365,7 +365,7 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 		case cm < 0:
 			r = append(r, Difference{
 				Path: Path{{
-					Map: toPtr(fmt.Sprint(es1[i1].Key)),
+					Map: new(fmt.Sprint(es1[i1].Key)),
 				}},
 				Message: msgMapKeyNotDefined,
 				V1:      strconv.FormatBool(true),
@@ -376,7 +376,7 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 		case cm > 0:
 			r = append(r, Difference{
 				Path: Path{{
-					Map: toPtr(fmt.Sprint(es2[i2].Key)),
+					Map: new(fmt.Sprint(es2[i2].Key)),
 				}},
 				Message: msgMapKeyNotDefined,
 				V1:      strconv.FormatBool(false),
@@ -388,7 +388,7 @@ func (c *Comparator) compareMap(st *State, v1, v2 reflect.Value) Result {
 			er := c.compare(st, es1[i1].Value, es2[i2].Value)
 			if len(er) > 0 {
 				er.pathAppend(PathElem{
-					Map: toPtr(fmt.Sprint(es1[i1].Key)),
+					Map: new(fmt.Sprint(es1[i1].Key)),
 				})
 				r = append(r, er...)
 				diffCount++
@@ -810,8 +810,4 @@ func (e PathElem) Format(s fmt.State, verb rune) {
 		_, _ = strconvio.WriteInt(s, int64(*e.Index), 10)
 		_, _ = unsafeio.WriteString(s, "]")
 	}
-}
-
-func toPtr[V any](v V) *V {
-	return &v
 }
