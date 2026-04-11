@@ -1,4 +1,4 @@
-// Package compare provide comparison utilities.
+// Package compare provides comparison utilities.
 package compare
 
 import (
@@ -728,7 +728,7 @@ type Difference struct {
 // Format implements [fmt.Formatter].
 //
 // It only supports the 'v' verb.
-// By default, it show the path and message.
+// By default, it shows the path and message.
 // The '+' flag shows values V1 and V2.
 func (d Difference) Format(s fmt.State, verb rune) {
 	if verb != 'v' {
