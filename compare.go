@@ -781,8 +781,8 @@ func (p Path) Format(s fmt.State, verb rune) {
 		_, _ = unsafeio.WriteString(s, ".")
 		return
 	}
-	for i := len(p) - 1; i >= 0; i-- {
-		p[i].Format(s, verb)
+	for _, v := range slices.Backward(p) {
+		v.Format(s, verb)
 	}
 }
 
