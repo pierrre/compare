@@ -34,13 +34,13 @@ type Comparator struct {
 	MaxDepth int
 	// SliceMaxDifferences is the maximum number of different items for a slice.
 	// If the value is reached, the comparison is stopped for the current slice.
-	// It is also used for array.
-	// Set to 0 disables it.
+	// It is also used for arrays.
+	// Setting it to 0 disables it.
 	// Default: 10.
 	SliceMaxDifferences int
 	// MapMaxDifferences is the maximum number of different items for a map.
 	// If the value is reached, the comparison is stopped for the current map.
-	// Set to 0 disables it.
+	// Setting it to 0 disables it.
 	// Default: 10.
 	MapMaxDifferences int
 	// Funcs is the list of custom comparison functions.
@@ -688,7 +688,7 @@ type Result []Difference
 
 // Format implements [fmt.Formatter].
 //
-// See [Difference.Format] for supported verb and flag.
+// See [Difference.Format] for the supported verbs and flags.
 func (r Result) Format(s fmt.State, verb rune) {
 	if verb != 'v' {
 		_, _ = fmt.Fprintf(s, "%%!%c(%T)", verb, r)
@@ -769,7 +769,7 @@ const (
 
 // Path represents a field path, which is a list of [PathElem].
 //
-// Elements are stored in reverse order, the first element is the deepest.
+// Elements are stored in reverse order; the first element is the deepest.
 // It helps to prepend elements to the path efficiently.
 type Path []PathElem
 

@@ -10,7 +10,7 @@ Go compare library.
 - Returns a detailed diff result
 - Supports custom comparison functions:
   - `.Equal()` / `.Eq()` / `.Cmp()` / ...
-  - Add you own functions !
+  - Add your own functions!
 
 ## Usage
 
