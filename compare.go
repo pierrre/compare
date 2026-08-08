@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/pierrre/go-libs/reflectutil"
 	"github.com/pierrre/go-libs/strconvio"
@@ -18,11 +19,17 @@ import (
 
 // Compare compares 2 values with [DefaultComparator].
 func Compare(v1, v2 any) Result {
-	return DefaultComparator.Compare(v1, v2)
+	return DefaultComparator.Load().Compare(v1, v2)
 }
 
 // DefaultComparator is the default [Comparator].
-var DefaultComparator = NewComparator()
+//
+// It is created with [NewComparator].
+var DefaultComparator atomic.Pointer[Comparator]
+
+func init() {
+	DefaultComparator.Store(NewComparator())
+}
 
 // Comparator compares 2 values.
 //

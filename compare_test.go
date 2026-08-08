@@ -236,14 +236,14 @@ var compareTestCases = []testCase{
 	{
 		name: "SliceNotEqualMaxDifferences",
 		v1: func() []int {
-			s := make([]int, DefaultComparator.SliceMaxDifferences*2)
+			s := make([]int, DefaultComparator.Load().SliceMaxDifferences*2)
 			for i := range s {
 				s[i] = i
 			}
 			return s
 		}(),
 		v2: func() []int {
-			s := make([]int, DefaultComparator.SliceMaxDifferences*2)
+			s := make([]int, DefaultComparator.Load().SliceMaxDifferences*2)
 			for i := range s {
 				s[i] = i + 1
 			}
@@ -416,14 +416,14 @@ var compareTestCases = []testCase{
 		name: "MapNotEqualMaxDifferences",
 		v1: func() map[int]int {
 			m := make(map[int]int)
-			for i := range DefaultComparator.SliceMaxDifferences * 2 {
+			for i := range DefaultComparator.Load().SliceMaxDifferences * 2 {
 				m[i] = i
 			}
 			return m
 		}(),
 		v2: func() map[int]int {
 			m := make(map[int]int)
-			for i := range DefaultComparator.SliceMaxDifferences * 2 {
+			for i := range DefaultComparator.Load().SliceMaxDifferences * 2 {
 				m[i] = i + 1
 			}
 			return m
