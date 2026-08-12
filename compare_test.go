@@ -431,8 +431,8 @@ var compareTestCases = []testCase{
 	},
 	{
 		name: "UnsafePointerEqual",
-		v1:   unsafe.Pointer(&testInt), //nolint:gosec // It's OK.
-		v2:   unsafe.Pointer(&testInt), //nolint:gosec // It's OK.
+		v1:   unsafe.Pointer(&testInt),
+		v2:   unsafe.Pointer(&testInt),
 	},
 	{
 		name: "ChanEqual",
@@ -609,8 +609,8 @@ func BenchmarkCompare(b *testing.B) {
 }
 
 func TestCompareUnsafePointerNotEqual(t *testing.T) {
-	v1 := unsafe.Pointer(&testInt)   //nolint:gosec // It's OK.
-	v2 := unsafe.Pointer(&testSlice) //nolint:gosec // It's OK.
+	v1 := unsafe.Pointer(&testInt)
+	v2 := unsafe.Pointer(&testSlice)
 	r := Compare(v1, v2)
 	assert.SliceLen(t, r, 1)
 	d := r[0]
