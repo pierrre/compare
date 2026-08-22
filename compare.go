@@ -583,8 +583,8 @@ func compareReflectValue(c *Comparator, st *State, v1, v2 reflect.Value) (Result
 		// We don't want to compare the structs.
 		return nil, true
 	}
-	v1, _ = v1.Interface().(reflect.Value)
-	v2, _ = v2.Interface().(reflect.Value)
+	v1, _ = reflect.TypeAssert[reflect.Value](v1)
+	v2, _ = reflect.TypeAssert[reflect.Value](v2)
 	return c.compare(st, v1, v2), true
 }
 
@@ -601,7 +601,7 @@ func compareMethodEqual(c *Comparator, st *State, v1, v2 reflect.Value) (Result,
 	if !v1.CanInterface() || !v2.CanInterface() {
 		return nil, false
 	}
-	eqRes, _ := f.Call([]reflect.Value{v1, v2})[0].Interface().(bool)
+	eqRes, _ := reflect.TypeAssert[bool](f.Call([]reflect.Value{v1, v2})[0])
 	if eqRes {
 		return nil, true
 	}
@@ -652,7 +652,7 @@ func compareMethodCmp(c *Comparator, st *State, v1, v2 reflect.Value) (Result, b
 	if !v1.CanInterface() || !v2.CanInterface() {
 		return nil, false
 	}
-	cmpRes, _ := f.Call([]reflect.Value{v1, v2})[0].Interface().(int)
+	cmpRes, _ := reflect.TypeAssert[int](f.Call([]reflect.Value{v1, v2})[0])
 	if cmpRes == 0 {
 		return nil, true
 	}
