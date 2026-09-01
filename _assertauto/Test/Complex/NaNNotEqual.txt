@@ -1,0 +1,9 @@
+.: complex not equal
+v1 = (NaN+1i)
+v2 = (NaN+1i)
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 3,
+}

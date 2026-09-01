@@ -1,0 +1,12 @@
+[a]: map key not defined
+v1 = false
+v2 = true
+[b]: map key not defined
+v1 = true
+v2 = false
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 10,
+}

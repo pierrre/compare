@@ -1,0 +1,9 @@
+.: method Compare returned -1
+v1 = {1 0}
+v2 = {2 0}
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 5,
+}

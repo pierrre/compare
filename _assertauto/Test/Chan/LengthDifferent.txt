@@ -1,0 +1,9 @@
+.: length not equal
+v1 = 0
+v2 = 1
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 1,
+}

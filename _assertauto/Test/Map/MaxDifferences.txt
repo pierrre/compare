@@ -1,0 +1,36 @@
+[a]: int not equal
+v1 = 1
+v2 = 0
+[b]: int not equal
+v1 = 2
+v2 = 0
+[c]: int not equal
+v1 = 3
+v2 = 0
+[d]: int not equal
+v1 = 4
+v2 = 0
+[e]: int not equal
+v1 = 5
+v2 = 0
+[f]: int not equal
+v1 = 6
+v2 = 0
+[g]: int not equal
+v1 = 7
+v2 = 0
+[h]: int not equal
+v1 = 8
+v2 = 0
+[i]: int not equal
+v1 = 9
+v2 = 0
+[j]: int not equal
+v1 = 10
+v2 = 0
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 45,
+}

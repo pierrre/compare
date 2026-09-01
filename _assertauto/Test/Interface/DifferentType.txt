@@ -1,0 +1,9 @@
+[0]: type not equal
+v1 = int
+v2 = string
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 4,
+}

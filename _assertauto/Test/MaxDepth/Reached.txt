@@ -1,0 +1,12 @@
+[0]: max depth reached: 1
+v1 = []int
+v2 = []int
+[1]: max depth reached: 1
+v1 = []int
+v2 = []int
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 10,
+}

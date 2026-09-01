@@ -1,1 +1,0 @@
-[github.com/pierrre/compare.Result]([]github.com/pierrre/compare.Difference) <nil>

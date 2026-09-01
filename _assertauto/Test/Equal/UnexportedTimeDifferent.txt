@@ -1,0 +1,9 @@
+.t.ext: int not equal
+v1 = 62135596800
+v2 = 62135596801
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 9,
+}

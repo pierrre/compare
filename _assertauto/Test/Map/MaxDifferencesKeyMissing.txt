@@ -1,0 +1,36 @@
+[A]: map key not defined
+v1 = false
+v2 = true
+[B]: map key not defined
+v1 = false
+v2 = true
+[C]: map key not defined
+v1 = false
+v2 = true
+[D]: map key not defined
+v1 = false
+v2 = true
+[E]: map key not defined
+v1 = false
+v2 = true
+[F]: map key not defined
+v1 = false
+v2 = true
+[G]: map key not defined
+v1 = false
+v2 = true
+[H]: map key not defined
+v1 = false
+v2 = true
+[I]: map key not defined
+v1 = false
+v2 = true
+[J]: map key not defined
+v1 = false
+v2 = true
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 45,
+}
