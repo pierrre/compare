@@ -29,7 +29,7 @@ type KindComparator struct {
 	ValuesComparators [kindsCount]ValuesComparator
 }
 
-// NewKindComparator creates a new KindValuesComparator.
+// NewKindComparator creates a new [KindComparator].
 func NewKindComparator(vc ValuesComparator) *KindComparator {
 	kindVC := &KindComparator{
 		Bool:          NewBoolComparator(),

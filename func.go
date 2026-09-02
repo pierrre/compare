@@ -39,7 +39,7 @@ func (vc *FuncComparator) CompareValues(st *State, v1, v2 reflect.Value) (res Re
 	if f2 != nil {
 		fn2 = f2.Name()
 	}
-	return Res("function pointer not equal", fn1, fn2), true // TODO: show function name ?
+	return Res("function pointer not equal", fn1, fn2), true
 }
 
 // Supports implements [SupportChecker].

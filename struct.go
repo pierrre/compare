@@ -13,7 +13,7 @@ type StructComparator struct {
 	ValuesComparator
 }
 
-// NewStructComparator creates a new [NewStructComparator].
+// NewStructComparator creates a new [StructComparator].
 func NewStructComparator(vc ValuesComparator) *StructComparator {
 	return &StructComparator{
 		ValuesComparator: vc,

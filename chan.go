@@ -4,7 +4,7 @@ import (
 	"reflect"
 )
 
-// ChanComparator is a [ValuesComparator] of chan values.
+// ChanComparator is a [ValuesComparator] for chan values.
 //
 // It should be created with [NewChanComparator].
 type ChanComparator struct{}
