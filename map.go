@@ -35,7 +35,7 @@ func (vc *MapComparator) CompareValues(st *State, v1, v2 reflect.Value) (res Res
 	if handled {
 		return res, true
 	}
-	return compareMap(vc.ValuesComparator, st, v1, v2, vc.MaxDifferences), true
+	return vc.compareMap(st, v1, v2), true
 }
 
 // Supports implements [SupportChecker].
@@ -47,7 +47,7 @@ func (vc *MapComparator) Supports(typ reflect.Type) ValuesComparator {
 	return res
 }
 
-func compareMap(vc ValuesComparator, st *State, v1, v2 reflect.Value, maxDifferences int) (res Result) {
+func (vc *MapComparator) compareMap(st *State, v1, v2 reflect.Value) (res Result) {
 	es1 := reflectutil.GetSortedMap(v1)
 	es2 := reflectutil.GetSortedMap(v2)
 	defer es1.Release()
@@ -69,20 +69,20 @@ func compareMap(vc ValuesComparator, st *State, v1, v2 reflect.Value, maxDiffere
 		var r Result
 		switch {
 		case cm < 0:
-			r = compareMapKeyMissing(es1[i1].Key, true)
+			r = vc.compareMapKeyMissing(es1[i1].Key, true)
 			i1++
 		case cm > 0:
-			r = compareMapKeyMissing(es2[i2].Key, false)
+			r = vc.compareMapKeyMissing(es2[i2].Key, false)
 			i2++
 		default:
-			r = compareMapKey(vc, st, es1[i1].Value, es2[i2].Value, es1[i1].Key)
+			r = vc.compareMapKey(st, es1[i1].Value, es2[i2].Value, es1[i1].Key)
 			i1++
 			i2++
 		}
 		if len(r) > 0 {
 			res = append(res, r...)
 			diffCount++
-			if diffCount >= maxDifferences && maxDifferences > 0 {
+			if diffCount >= vc.MaxDifferences && vc.MaxDifferences > 0 {
 				break
 			}
 		}
@@ -90,25 +90,25 @@ func compareMap(vc ValuesComparator, st *State, v1, v2 reflect.Value, maxDiffere
 	return res
 }
 
-func compareMapKey(vc ValuesComparator, st *State, v1, v2, key reflect.Value) Result {
-	res, _ := vc.CompareValues(st, v1, v2)
+func (vc *MapComparator) compareMapKey(st *State, v1, v2, key reflect.Value) Result {
+	res, _ := vc.ValuesComparator.CompareValues(st, v1, v2)
 	if len(res) != 0 {
 		res.AppendPathElem(PathElem{
-			Key: new(getMapKeyInterface(key)),
+			Key: new(vc.getMapKeyInterface(key)),
 		})
 	}
 	return res
 }
 
-func compareMapKeyMissing(key reflect.Value, inV1 bool) Result {
+func (vc *MapComparator) compareMapKeyMissing(key reflect.Value, inV1 bool) Result {
 	r := Res("map key not defined", inV1, !inV1)
 	r.AppendPathElem(PathElem{
-		Key: new(getMapKeyInterface(key)),
+		Key: new(vc.getMapKeyInterface(key)),
 	})
 	return r
 }
 
-func getMapKeyInterface(v reflect.Value) any {
+func (vc *MapComparator) getMapKeyInterface(v reflect.Value) any {
 	i, _ := reflectutil.TryValueInterface(v)
 	return i
 }
