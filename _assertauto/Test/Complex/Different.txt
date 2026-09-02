@@ -1,0 +1,9 @@
+.: complex not equal
+v1 = (1+2i)
+v2 = (3+4i)
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 3,
+}

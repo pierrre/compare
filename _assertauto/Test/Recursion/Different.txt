@@ -1,0 +1,9 @@
+*.Next*.Next: nil mismatch
+v1 = false
+v2 = true
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 8,
+}

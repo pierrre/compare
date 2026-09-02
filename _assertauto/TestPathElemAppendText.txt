@@ -1,0 +1,7 @@
+[string] (len=5) "[123]"
+	========== assertauto ==========
+[string] (len=6) "[test]"
+	========== assertauto ==========
+[string] (len=5) ".test"
+	========== assertauto ==========
+[string] (len=1) "*"

@@ -1,0 +1,15 @@
+[0]: int not equal
+v1 = 1
+v2 = 0
+[1]: int not equal
+v1 = 2
+v2 = 0
+[2]: int not equal
+v1 = 3
+v2 = 0
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 12,
+}

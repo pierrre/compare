@@ -1,0 +1,66 @@
+[0]: int not equal
+v1 = 1
+v2 = 0
+[1]: int not equal
+v1 = 2
+v2 = 0
+[2]: int not equal
+v1 = 3
+v2 = 0
+[3]: int not equal
+v1 = 4
+v2 = 0
+[4]: int not equal
+v1 = 5
+v2 = 0
+[5]: int not equal
+v1 = 6
+v2 = 0
+[6]: int not equal
+v1 = 7
+v2 = 0
+[7]: int not equal
+v1 = 8
+v2 = 0
+[8]: int not equal
+v1 = 9
+v2 = 0
+[9]: int not equal
+v1 = 10
+v2 = 0
+[10]: int not equal
+v1 = 11
+v2 = 0
+[11]: int not equal
+v1 = 12
+v2 = 0
+[12]: int not equal
+v1 = 13
+v2 = 0
+[13]: int not equal
+v1 = 14
+v2 = 0
+[14]: int not equal
+v1 = 15
+v2 = 0
+[15]: int not equal
+v1 = 16
+v2 = 0
+[16]: int not equal
+v1 = 17
+v2 = 0
+[17]: int not equal
+v1 = 18
+v2 = 0
+[18]: int not equal
+v1 = 19
+v2 = 0
+[19]: int not equal
+v1 = 20
+v2 = 0
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 66,
+}

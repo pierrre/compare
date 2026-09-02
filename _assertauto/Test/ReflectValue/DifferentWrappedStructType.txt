@@ -1,0 +1,9 @@
+.: type not equal
+v1 = compare_test.testStruct
+v2 = compare_test.testStruct2
+
+	========== assertauto ==========
+[github.com/pierrre/assert/assertauto.allocsPerRun] {
+	Runs: [int] 100,
+	Allocs: [float64] 1,
+}
