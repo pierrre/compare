@@ -15,6 +15,4 @@ func stringFromAppender[A appender](a A) string {
 	return bw.String()
 }
 
-var bytesWriterPool = &bytesutil.WriterPool{
-	MaxCap: -1,
-}
+var bytesWriterPool = &bytesutil.WriterPool{}
